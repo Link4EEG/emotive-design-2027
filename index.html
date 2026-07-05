@@ -523,6 +523,21 @@
   <button class="ebtn done" id="doneEdit">✓ Done</button>
 </div>
 
+<!-- 🔒 편집 잠금(비밀번호) 대화상자 — '✎ Edit page' 버튼을 누르면 여기서 비번을 먼저 확인해요 -->
+<dialog class="form-dlg" id="authDlg">
+  <div class="dlg-head"><h3>🔒 Editor sign-in</h3><button class="dlg-close" data-close="authDlg">×</button></div>
+  <div class="form-body">
+    <label>Editor password</label>
+    <input type="password" id="authPw" placeholder="Enter password to edit" autocomplete="current-password">
+    <p class="form-note" id="authErr" style="display:none;color:#e14c73;font-weight:600">✗ Incorrect password. Please try again.</p>
+    <p class="form-note">Editing is restricted to the site owner.</p>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-ghost" data-close="authDlg">Cancel</button>
+    <button class="btn btn-grad" id="authGo">Unlock</button>
+  </div>
+</dialog>
+
 <!-- film modal -->
 <dialog id="filmDlg">
   <div class="dlg-head"><h3 data-edit="film.dlgtitle">Monster Space — Emotive Design</h3><button class="dlg-close" data-close="filmDlg">×</button></div>
@@ -693,7 +708,52 @@
     document.body.classList.toggle("editing", on);
     $$("[data-edit]").forEach(function(el){ el.setAttribute("contenteditable", on?"true":"false"); });
   }
-  $("#editFab").addEventListener("click", function(){ setEdit(true); });
+  /* ============================================================
+     🔒 편집 잠금(비밀번호) — 나(주인)만 편집할 수 있게 막는 부분
+     - 비밀번호 원본은 코드에 안 넣어요. 대신 SHA-256으로 만든 '지문(해시)'만 저장해요.
+       (지문만으론 원래 비번을 알 수 없어요 → 소스를 열어봐도 비번이 안 보임 🙈)
+     - 방문자가 입력한 비번을 똑같이 지문으로 바꿔서, 저장된 지문과 같을 때만 편집이 열려요.
+     - 한 번 맞히면 그 브라우저 '세션' 동안은 다시 안 물어봐요(탭을 닫으면 초기화 🔄).
+     ⚠️ 참고: 서버가 없는 정적 사이트라 '일반 방문자 차단' 수준의 보호예요(은행급 보안은 아님).
+     ============================================================ */
+  var EDIT_HASH = "ecbca980277f53175f992f4ea53f3ac453cf598d5ef858308cd244c2e3e38132"; // 🔑 비밀번호의 SHA-256 지문
+  var AUTH_KEY  = "emotive2027_edit_ok"; // 세션 동안 '인증됨'을 기억하는 이름표
+  var authDlg   = $("#authDlg");         // 비밀번호 입력창
+
+  // 🔧 글자 → SHA-256 지문(16진수 문자열)으로 바꿔주는 함수 (브라우저 내장 암호 기능 사용)
+  function sha256hex(str){
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(str)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(b){ return ("0"+b.toString(16)).slice(-2); }).join("");
+    });
+  }
+  // 🔍 지금 이 세션에서 이미 비번을 맞혔는지 확인 (맞혔으면 다시 안 물어봄)
+  function editUnlocked(){ try{ return sessionStorage.getItem(AUTH_KEY)==="1"; }catch(e){ return false; } }
+
+  // 🔑 입력한 비번을 검사 → 맞으면 편집모드 열기, 틀리면 오류 표시
+  function tryUnlock(){
+    sha256hex($("#authPw").value).then(function(h){
+      if(h === EDIT_HASH){                          // ✅ 지문 일치 → 통과!
+        try{ sessionStorage.setItem(AUTH_KEY,"1"); }catch(e){}
+        authDlg.close();
+        setEdit(true);
+      } else {                                       // ❌ 틀림 → 다시 입력 요청
+        $("#authErr").style.display = "block";
+        $("#authPw").value = "";
+        $("#authPw").focus();
+      }
+    });
+  }
+  $("#authGo").addEventListener("click", tryUnlock);
+  $("#authPw").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); tryUnlock(); } });
+
+  // ✎ '편집 페이지' 버튼: 이미 인증됐으면 바로 편집모드, 아니면 비번창을 먼저 띄움
+  $("#editFab").addEventListener("click", function(){
+    if(editUnlocked()){ setEdit(true); return; }    // 이미 통과한 세션이면 바로 열기
+    $("#authErr").style.display = "none";            // 오류 메시지 숨기고
+    $("#authPw").value = "";                          // 입력칸 비우고
+    authDlg.showModal();                              // 비번창 열기
+    setTimeout(function(){ $("#authPw").focus(); }, 30); // 입력칸에 커서 자동 이동
+  });
   $("#doneEdit").addEventListener("click", function(){ captureText(); setEdit(false); save(); });
   function captureText(){
     $$("[data-edit]").forEach(function(el){ state.text[el.getAttribute("data-edit")] = el.innerHTML; });

@@ -16,6 +16,7 @@ const systemCss = html.match(/<style id="vignelli-system">([\s\S]*?)<\/style>/)?
 const heroMarkup = html.match(/<header id="top">[\s\S]*?<\/header>/)?.[0] ?? ''
 const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, '')
 const appScript = extractInlineScript(html)
+const seungPortrait = await readFile(new URL('../../assets/human/seung-yeul-ji.webp', import.meta.url))
 
 const EXPECTED_CONTENT_HASH = '17528570c56ddab03abe30cc4226c4e7f780e3f5302408b1764dedb4c98c3428'
 const SECTION_MARKERS = Object.freeze([
@@ -124,8 +125,17 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
   ])
 })
 
+test('ships the updated Seung Yeul Ji portrait rather than the previous image', () => {
+  const approvedPortraitHash = '63c9e7138a5782517f8657f18497cac7084bd9388c7a7aafd573cd9bbb512518'
+  assert.equal(sha256(seungPortrait), approvedPortraitHash)
+  assert.equal(seungPortrait.subarray(0, 4).toString(), 'RIFF')
+  assert.equal(seungPortrait.subarray(8, 12).toString(), 'WEBP')
+})
+
 test('implements an accessible expanding speaker accordion carousel', () => {
   const cssWithoutSpeakerOverlay = systemCss.replace(/\.spk\.is-active::after\s*\{[^}]*\}/s, '')
+  const speakerInfoRule = systemCss.match(/\.spk \.info\s*\{([^}]*)\}/s)?.[1] ?? ''
+  const mobileSpeakerInfoRule = systemCss.match(/@media\s*\(max-width:640px\)[\s\S]*?\.spk \.info\s*\{([^}]*)\}/s)?.[1] ?? ''
   assert.doesNotMatch(cssWithoutSpeakerOverlay, /linear-gradient|radial-gradient/i)
   assert.match(systemCss, /\.spk\.is-active::after\s*\{[^}]*linear-gradient\(/s)
   assert.match(systemCss, /\.spk-grid\s*\{[^}]*display:flex[^}]*flex-wrap:nowrap[^}]*gap:/s)
@@ -133,12 +143,28 @@ test('implements an accessible expanding speaker accordion carousel', () => {
   assert.match(systemCss, /\.spk\.is-active\s*\{[^}]*flex-basis:52%/s)
   assert.match(systemCss, /\.spk \.face img\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
   assert.match(systemCss, /\.spk\.is-active \.info\s*\{[^}]*opacity:1[^}]*visibility:visible/s)
+  assert.match(systemCss, /@media\s*\(min-width:641px\)\s*and\s*\(max-width:800px\)[\s\S]*?\.spk-grid\s*\{[^}]*overflow-x:auto[^}]*scroll-snap-type:x proximity/s)
   assert.match(systemCss, /@media\s*\(max-width:640px\)[\s\S]*?\.spk-grid\s*\{[^}]*overflow-x:auto[^}]*scroll-snap-type:x proximity/s)
+  assert.match(speakerInfoRule, /bottom:24px/)
+  assert.doesNotMatch(speakerInfoRule, /(?:^|;)\s*top:/)
+  assert.match(speakerInfoRule, /width:min\(62\.4%,336px\)/)
+  assert.match(speakerInfoRule, /padding:14px 16px/)
+  assert.match(speakerInfoRule, /border-left:3px solid var\(--accent\)/)
+  assert.match(systemCss, /\.spk \.role\s*\{[^}]*margin:0 0 14px[^}]*font:700 8px/s)
+  assert.match(systemCss, /\.spk \.spk-name\s*\{[^}]*font-size:clamp\(18px,1\.9vw,27px\)/s)
+  assert.match(systemCss, /\.spk \.aff\s*\{[^}]*font-size:10px/s)
+  assert.match(mobileSpeakerInfoRule, /bottom:18px/)
+  assert.doesNotMatch(mobileSpeakerInfoRule, /(?:^|;)\s*top:/)
+  assert.match(mobileSpeakerInfoRule, /width:min\(calc\(100% - 36px\),268px\)/)
+  assert.match(mobileSpeakerInfoRule, /padding:13px/)
 
   assert.match(html, /class="spk-carousel"[^>]*role="region"[^>]*aria-roledescription="carousel"/)
   assert.match(html, /id="spkPrev"[^>]*aria-label="Previous speaker"[^>]*aria-controls="speakers"/)
   assert.match(html, /id="spkNext"[^>]*aria-label="Next speaker"[^>]*aria-controls="speakers"/)
-  assert.match(appScript, /function middleSpeakerIndex\(/)
+  const defaultIndexSource = appScript.match(/function defaultSpeakerIndex\(count\)\{[^}]*\}/)?.[0] ?? ''
+  const defaultIndexContext = {}
+  new Script(`${defaultIndexSource};result=[defaultSpeakerIndex(0),defaultSpeakerIndex(1),defaultSpeakerIndex(4)];`).runInNewContext(defaultIndexContext)
+  assert.deepEqual(Array.from(defaultIndexContext.result), [-1, 0, 0])
   assert.match(appScript, /function setActiveSpeaker\(/)
   assert.match(appScript, /function stepSpeaker\(/)
   assert.match(appScript, /setAttribute\("aria-expanded",\s*active\s*\?\s*"true"\s*:\s*"false"\)/)
@@ -146,10 +172,12 @@ test('implements an accessible expanding speaker accordion carousel', () => {
   assert.match(appScript, /ArrowRight/)
   assert.match(appScript, /pointerdown/)
   assert.match(appScript, /pointerup/)
+  assert.match(appScript, /matchMedia\("\(max-width:800px\)"\)\.matches/)
   assert.match(appScript, /track\.scrollTo\(\{left:targetLeft,behavior:/)
   assert.match(appScript, /activeCard\.getBoundingClientRect\(\)\.left-track\.getBoundingClientRect\(\)\.left\+track\.scrollLeft/)
   assert.match(appScript, /propertyName!=="flex-basis"/)
   assert.match(appScript, /addEventListener\("transitionend",settle\)/)
+  assert.match(appScript, /activeSpeakerIndex=defaultSpeakerIndex\(state\.speakers\.length\)/)
   assert.match(appScript, /setActiveSpeaker\(activeSpeakerIndex,\{scroll:true,instant:true\}\)/)
 })
 

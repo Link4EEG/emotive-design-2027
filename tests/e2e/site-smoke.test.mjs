@@ -29,6 +29,15 @@ test('serves the complete academic page and featured film over HTTP', async (con
   assert.equal(Buffer.from(heroChunk?.value ?? []).subarray(4, 8).toString(), 'ftyp')
   await heroReader?.cancel()
 
+  for (const portrait of ['seung-yeul-ji.webp', 'ju-hyun-lee.webp', 'michael-ostwald.webp', 'hoon-han.webp']) {
+    const portraitResponse = await fetch(`${server.origin}/assets/human/${portrait}`)
+    assert.equal(portraitResponse.status, 200)
+    assert.equal(portraitResponse.headers.get('content-type'), 'image/webp')
+    const portraitBytes = Buffer.from(await portraitResponse.arrayBuffer())
+    assert.equal(portraitBytes.subarray(0, 4).toString(), 'RIFF')
+    assert.equal(portraitBytes.subarray(8, 12).toString(), 'WEBP')
+  }
+
   const filmResponse = await fetch(`${server.origin}/assets/emotive-film-trailer.mp4`)
   assert.equal(filmResponse.status, 200)
   assert.equal(filmResponse.headers.get('content-type'), 'video/mp4')

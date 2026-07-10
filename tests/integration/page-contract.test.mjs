@@ -15,8 +15,9 @@ const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8'
 const systemCss = html.match(/<style id="vignelli-system">([\s\S]*?)<\/style>/)?.[1] ?? ''
 const heroMarkup = html.match(/<header id="top">[\s\S]*?<\/header>/)?.[0] ?? ''
 const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, '')
+const appScript = extractInlineScript(html)
 
-const EXPECTED_CONTENT_HASH = '10e3f58709c8a58dc51bef94834d5412f2a9264f718a985c215eaab29af1f988'
+const EXPECTED_CONTENT_HASH = '17528570c56ddab03abe30cc4226c4e7f780e3f5302408b1764dedb4c98c3428'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -47,6 +48,7 @@ test('presents the event consistently as Roundabout across metadata and editable
 
 test('migrates legacy saved event labels without mutating other saved edits', () => {
   const script = extractInlineScript(html)
+  const defaultsSource = script.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const migrationSource = script.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
   const input = {
     text: {
@@ -61,6 +63,7 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
   const context = { input }
   new Script(`
     var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+    ${defaultsSource}
     ${migrationSource}
     result=migrateState(input);
   `).runInNewContext(context)
@@ -89,9 +92,10 @@ test('preserves all 101 editable content bindings', () => {
 })
 
 test('preserves runtime content, media, registration, and editor storage contracts', () => {
-  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Mijeong Kim']) {
+  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Professor Hoon Han']) {
     assert.ok(html.includes(speaker), `missing speaker: ${speaker}`)
   }
+  assert.doesNotMatch(html, /Prof Mijeong Kim/)
 
   for (const contract of [
     'emotive2027_v2',
@@ -104,6 +108,84 @@ test('preserves runtime content, media, registration, and editor storage contrac
   ]) {
     assert.ok(html.includes(contract), `missing runtime contract: ${contract}`)
   }
+})
+
+test('defines the confirmed speakers with web-safe portraits and individual crop positions', () => {
+  const declaration = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const context = {}
+  new Script(`${declaration};result=DEFAULT_SPEAKERS;`).runInNewContext(context)
+  const speakers = JSON.parse(JSON.stringify(context.result))
+
+  assert.deepEqual(speakers.map(({ name, role, aff, photo, photoPosition }) => ({ name, role, aff, photo, photoPosition })), [
+    { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', photo: 'assets/human/seung-yeul-ji.webp', photoPosition: '50% 28%' },
+    { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%' },
+    { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%' },
+    { name: 'Professor Hoon Han', role: 'Discussant', aff: 'UNSW Sydney · Director, UNSW Cities Institute', photo: 'assets/human/hoon-han.webp', photoPosition: '50% 42%' }
+  ])
+})
+
+test('implements an accessible expanding speaker accordion carousel', () => {
+  const cssWithoutSpeakerOverlay = systemCss.replace(/\.spk\.is-active::after\s*\{[^}]*\}/s, '')
+  assert.doesNotMatch(cssWithoutSpeakerOverlay, /linear-gradient|radial-gradient/i)
+  assert.match(systemCss, /\.spk\.is-active::after\s*\{[^}]*linear-gradient\(/s)
+  assert.match(systemCss, /\.spk-grid\s*\{[^}]*display:flex[^}]*flex-wrap:nowrap[^}]*gap:/s)
+  assert.match(systemCss, /\.spk\s*\{[^}]*flex:0 0 clamp\(90px,[^,]+,130px\)[^}]*height:clamp\([^}]*border-radius:[^}]*transition:flex-basis \.65s cubic-bezier/s)
+  assert.match(systemCss, /\.spk\.is-active\s*\{[^}]*flex-basis:52%/s)
+  assert.match(systemCss, /\.spk \.face img\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
+  assert.match(systemCss, /\.spk\.is-active \.info\s*\{[^}]*opacity:1[^}]*visibility:visible/s)
+  assert.match(systemCss, /@media\s*\(max-width:640px\)[\s\S]*?\.spk-grid\s*\{[^}]*overflow-x:auto[^}]*scroll-snap-type:x proximity/s)
+
+  assert.match(html, /class="spk-carousel"[^>]*role="region"[^>]*aria-roledescription="carousel"/)
+  assert.match(html, /id="spkPrev"[^>]*aria-label="Previous speaker"[^>]*aria-controls="speakers"/)
+  assert.match(html, /id="spkNext"[^>]*aria-label="Next speaker"[^>]*aria-controls="speakers"/)
+  assert.match(appScript, /function middleSpeakerIndex\(/)
+  assert.match(appScript, /function setActiveSpeaker\(/)
+  assert.match(appScript, /function stepSpeaker\(/)
+  assert.match(appScript, /setAttribute\("aria-expanded",\s*active\s*\?\s*"true"\s*:\s*"false"\)/)
+  assert.match(appScript, /ArrowLeft/)
+  assert.match(appScript, /ArrowRight/)
+  assert.match(appScript, /pointerdown/)
+  assert.match(appScript, /pointerup/)
+  assert.match(appScript, /track\.scrollTo\(\{left:targetLeft,behavior:/)
+  assert.match(appScript, /activeCard\.getBoundingClientRect\(\)\.left-track\.getBoundingClientRect\(\)\.left\+track\.scrollLeft/)
+  assert.match(appScript, /propertyName!=="flex-basis"/)
+  assert.match(appScript, /addEventListener\("transitionend",settle\)/)
+  assert.match(appScript, /setActiveSpeaker\(activeSpeakerIndex,\{scroll:true,instant:true\}\)/)
+})
+
+test('immutably migrates the legacy speaker roster while preserving custom participants', () => {
+  const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const input = {
+    text: {},
+    videos: { clip0: 'custom-hero.mp4' },
+    speakers: [
+      { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', color: '#171717', photo: '' },
+      { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', color: '#d52b1e', photo: 'custom-ju.jpg' },
+      { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', color: '#171717', photo: '' },
+      { name: 'Prof Mijeong Kim', role: 'Discussant', aff: 'Hanyang University', color: '#d52b1e', photo: '' },
+      { name: 'Custom Participant', role: 'Guest', aff: 'Custom Institute', color: '#171717', photo: 'custom.jpg' }
+    ]
+  }
+  const original = JSON.parse(JSON.stringify(input))
+  const context = { input }
+
+  new Script(`
+    var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+    ${defaults}
+    ${migration}
+    result=migrateState(input);
+  `).runInNewContext(context)
+
+  assert.deepEqual(Array.from(context.result.speakers, (speaker) => speaker.name), [
+    'Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Professor Hoon Han', 'Custom Participant'
+  ])
+  assert.equal(context.result.speakers[0].photo, 'assets/human/seung-yeul-ji.webp')
+  assert.equal(context.result.speakers[1].photo, 'custom-ju.jpg')
+  assert.equal(context.result.speakers[2].photoPosition, '50% 44%')
+  assert.equal(context.result.speakers[3].aff, 'UNSW Sydney · Director, UNSW Cities Institute')
+  assert.equal(context.result.speakers[4].photo, 'custom.jpg')
+  assert.deepEqual(input, original)
 })
 
 test('keeps the inline application script syntactically valid', () => {
@@ -142,7 +224,8 @@ test('implements the Vignelli-inspired visual system contract', () => {
   assert.match(systemCss, /--grid:\s*repeat\(12,minmax\(0,1fr\)\)/)
   assert.match(systemCss, /\.wrap\s*\{[^}]*grid-template-columns:var\(--grid\)/s)
   assert.match(systemCss, /\.kicker\s*\{[^}]*position:sticky/s)
-  assert.doesNotMatch(systemCss, /linear-gradient|radial-gradient/i)
+  const cssWithoutSpeakerOverlay = systemCss.replace(/\.spk\.is-active::after\s*\{[^}]*\}/s, '')
+  assert.doesNotMatch(cssWithoutSpeakerOverlay, /linear-gradient|radial-gradient/i)
   assert.doesNotMatch(systemCss, /box-shadow\s*:\s*(?!none)/i)
 })
 

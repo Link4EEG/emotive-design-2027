@@ -255,7 +255,7 @@
     --gutter:clamp(16px,1.8vw,28px);--edge:clamp(20px,4vw,72px);--nav-h:72px;
   }
   *{border-radius:0}
-  .btn,.ebtn,.stream,.spk,.film-card,.book-cover,.book-parts span,.join-card,dialog,.edit-fab,.edit-bar,.edit-hint,.hero-clip-edits button,.spk-add,.form-body input{border-radius:0!important}
+  .btn,.ebtn,.stream,.film-card,.book-cover,.book-parts span,.join-card,dialog,.edit-fab,.edit-bar,.edit-hint,.hero-clip-edits button,.form-body input{border-radius:0!important}
   html{scroll-padding-top:calc(var(--nav-h) + 24px)}
   body{background:var(--paper);color:var(--ink);font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;letter-spacing:-.006em}
   h1,h2,h3{font-family:inherit;letter-spacing:-.045em}
@@ -356,17 +356,28 @@
   .film-edit-btn{top:12px;left:12px}
   body:not(.editing) .film-side [data-filmedit]{display:none}
 
-  .spk-grid{grid-column:4/13;grid-row:3;display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:0;border-top:1px solid var(--ink);border-left:1px solid var(--ink)}
-  .spk{border:0;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);background:transparent;box-shadow:none;overflow:hidden;transition:none}
+  .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+  .spk-carousel{grid-column:4/13;grid-row:3;min-width:0}
+  .spk-controls{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin:0 0 16px}
+  .spk-nav{width:44px;height:44px;border:1px solid var(--ink);background:var(--paper);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;transition:background-color .2s,color .2s}
+  .spk-nav:hover,.spk-nav:focus-visible{background:var(--accent);color:var(--white);border-color:var(--accent)}
+  .spk-nav:disabled{cursor:not-allowed;opacity:.35}
+  .spk-grid{display:flex;flex-wrap:nowrap;gap:12px;width:100%;height:clamp(430px,42vw,560px);margin:0;overflow:hidden}
+  .spk{position:relative;isolation:isolate;flex:0 0 clamp(90px,8vw,130px);height:clamp(430px,42vw,560px);border:1px solid var(--ink);border-radius:12px!important;background:var(--ink);box-shadow:none;overflow:hidden;transition:flex-basis .65s cubic-bezier(.2,.7,.2,1)}
+  .spk.is-active{flex-basis:52%}
   .spk:hover{transform:none;box-shadow:none}
-  .spk .face{aspect-ratio:1/1.04;background:var(--ink)!important;color:var(--white);font:600 clamp(42px,5vw,70px) 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em}
-  .spk:nth-child(even) .face{background:var(--accent)!important}
-  .spk .face img{filter:grayscale(1);transition:filter .35s ease}
-  .spk:hover .face img{filter:grayscale(0)}
-  .spk .info{min-height:164px;padding:20px 18px 28px;background:var(--paper)}
-  .spk .role{margin:0 0 24px;color:var(--accent);font:700 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em}
-  .spk h3{margin:0 0 6px;font-size:20px;font-weight:600;line-height:1.1}
-  .spk .aff{color:var(--muted);font-size:12px;line-height:1.45}
+  .spk-toggle{position:absolute;inset:0;z-index:auto;width:100%;height:100%;padding:0;border:0;background:transparent;color:var(--white);cursor:pointer;text-align:left}
+  .spk-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:-5px}
+  .spk .face{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;background:var(--ink)!important;color:var(--white);font:600 clamp(42px,5vw,70px) 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em}
+  .spk .face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:var(--speaker-position,50% 50%);filter:grayscale(1) contrast(1.04);transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+  .spk.is-active .face img{transform:scale(1.015)}
+  .spk.is-active::after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(135deg,rgb(213 43 30 / .22) 0%,rgb(23 23 23 / .08) 46%,rgb(23 23 23 / .76) 100%);pointer-events:none}
+  .spk .info{position:absolute;top:24px;left:24px;z-index:2;width:min(78%,420px);min-height:0;padding:18px 20px;border-left:4px solid var(--accent);background:rgb(23 23 23 / .78);color:var(--white);opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .3s ease .18s,transform .3s ease .18s,visibility 0s linear .65s;pointer-events:none}
+  .spk.is-active .info{opacity:1;visibility:visible;transform:translateY(0);transition-delay:.22s,.22s,0s}
+  .spk .role{display:block;margin:0 0 18px;color:var(--white);font:700 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+  .spk .spk-name{display:block;margin:0 0 7px;color:var(--white);font-size:clamp(22px,2.4vw,34px);font-weight:600;line-height:1.02;letter-spacing:-.035em}
+  .spk .aff{display:block;color:rgb(253 253 251 / .84);font-size:12px;line-height:1.45}
+  .spk-add{flex:0 0 110px;height:100%;min-height:0!important;border-radius:12px!important}
   .spk-note{grid-column:4/10;margin:26px 0 0;color:var(--muted);font-size:13px}
 
   .book-in{padding-block:clamp(104px,11vw,176px);align-items:center}
@@ -447,11 +458,10 @@
     .hero-inner{min-height:calc(100dvh - var(--nav-h));grid-template-columns:var(--grid)}
     .hero-type{grid-column:1/5}
     .hero-info,.hero-sub,.hero-ctas{grid-column:1/4}
-    .value-grid,.stream-grid,#program>div:last-child,.film-card,.spk-grid,.spk-note,.join-grid{grid-column:2/7}
+    .value-grid,.stream-grid,#program>div:last-child,.film-card,.spk-carousel,.spk-note,.join-grid{grid-column:2/7}
     .film-card{grid-template-columns:1fr}
     .film-card video{min-height:0;aspect-ratio:16/9}
     .film-side{border-top:1px solid var(--ink);border-left:0}
-    .spk-grid{grid-template-columns:1fr 1fr}
     .book-cover{grid-column:1/3}
     .book-txt{grid-column:3/7}
     .count-band h2{grid-column:1/2}
@@ -463,7 +473,7 @@
   @media (max-width:640px){
     :root{--grid:repeat(4,minmax(0,1fr));--edge:20px;--gutter:14px;--nav-h:108px}
     section,section.wrap{padding-block:84px}
-    .kicker,.display,.lead,.value-grid,.stream-grid,#program>div:last-child,.film-card,.spk-grid,.spk-note,.join-grid{grid-column:1/5}
+    .kicker,.display,.lead,.value-grid,.stream-grid,#program>div:last-child,.film-card,.spk-carousel,.spk-note,.join-grid{grid-column:1/5}
     .kicker{position:static;grid-row:auto;margin:0 0 24px}
     .display{grid-row:auto;margin-bottom:24px;font-size:clamp(40px,13vw,60px)}
     .lead{grid-row:auto;margin-bottom:48px;font-size:17px}
@@ -490,7 +500,13 @@
     .talk .time{grid-column:1/2}
     .talk .meta{grid-column:2/5}
     .talk>div:last-child{grid-column:1/5;margin-top:12px}
-    .spk-grid{grid-template-columns:1fr 1fr}
+    .spk-controls{justify-content:flex-start}
+    .spk-grid{height:clamp(420px,128vw,520px);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scroll-padding-inline:20px;overscroll-behavior-inline:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .spk-grid::-webkit-scrollbar{display:none}
+    .spk{flex:0 0 104px;height:clamp(420px,128vw,520px);scroll-snap-align:center}
+    .spk.is-active{flex-basis:min(82vw,360px)}
+    .spk-add{flex-basis:104px}
+    .spk .info{top:18px;left:18px;width:calc(100% - 36px);padding:16px}
     .book-in{padding-block:84px}
     .book-cover{grid-column:1/4;max-width:320px;margin-bottom:52px}
     .book-txt{grid-column:1/5}
@@ -508,7 +524,6 @@
   }
 
   @media (max-width:420px){
-    .spk-grid{grid-template-columns:1fr}
     .hero-ctas,.final .hero-ctas{display:grid;grid-template-columns:1fr}
     .hero-ctas .btn,.final .hero-ctas .btn{justify-content:center}
     .edit-fab{position:absolute;top:var(--nav-h);right:10px;bottom:auto;width:44px;height:44px;padding:0;justify-content:center}
@@ -521,6 +536,8 @@
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
     .reveal,.talk,.stream,.value,.join-card{opacity:1!important;transform:none!important;animation:none!important}
     .hero-media video{transition:none}
+    .spk,.spk .face img,.spk .info{transition:none!important}
+    .spk-grid{scroll-behavior:auto}
     .scroll-progress{display:none}
   }
 </style>
@@ -717,7 +734,14 @@
   <div class="kicker">Speakers</div>
   <h2 class="display" data-edit="ppl.title">Meet our speakers</h2>
   <p class="lead" data-edit="ppl.lead">The keynotes and thematic sessions are led by the book's two co-authors, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.</p>
-  <div class="spk-grid" id="speakers"></div>
+  <div class="spk-carousel" role="region" aria-roledescription="carousel" aria-label="Featured speakers">
+    <div class="spk-controls">
+      <button class="spk-nav" id="spkPrev" type="button" aria-label="Previous speaker" aria-controls="speakers">←</button>
+      <button class="spk-nav" id="spkNext" type="button" aria-label="Next speaker" aria-controls="speakers">→</button>
+      <p class="sr-only" id="spkStatus" aria-live="polite"></p>
+    </div>
+    <div class="spk-grid" id="speakers" role="list" aria-label="Speaker profiles"></div>
+  </div>
   <p class="spk-note" data-edit="ppl.note">More discussants to be announced. Candidates are invited subject to confirmation.</p>
 </section>
 </div>
@@ -891,10 +915,10 @@
     film1: "assets/emotive-film-trailer.mp4"
   };
   var DEFAULT_SPEAKERS = [
-    {name:"Dr Seung Yeul Ji", role:"Keynote · Author", aff:"Hanyang University · Visiting Senior Fellow, UNSW Sydney", color:"#171717", photo:""},
-    {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:""},
-    {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:""},
-    {name:"Prof Mijeong Kim", role:"Discussant", aff:"Hanyang University", color:"#d52b1e", photo:""}
+    {name:"Dr Seung Yeul Ji", role:"Keynote · Author", aff:"Hanyang University · Visiting Senior Fellow, UNSW Sydney", color:"#171717", photo:"assets/human/seung-yeul-ji.webp", photoPosition:"50% 28%"},
+    {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:"assets/human/ju-hyun-lee.webp", photoPosition:"50% 42%"},
+    {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:"assets/human/michael-ostwald.webp", photoPosition:"50% 44%"},
+    {name:"Professor Hoon Han", role:"Discussant", aff:"UNSW Sydney · Director, UNSW Cities Institute", color:"#d52b1e", photo:"assets/human/hoon-han.webp", photoPosition:"50% 42%"}
   ];
 
   function migrateState(value){
@@ -916,6 +940,25 @@
         return result;
       },{});
       if(textChanged) next=Object.assign({},next,{text:migratedText});
+    }
+    if(Array.isArray(value.speakers)){
+      var legacySpeakerName=["Prof Mijeong"," Kim"].join("");
+      var speakersChanged=false;
+      var migratedSpeakers=value.speakers.map(function(speaker){
+        if(!speaker||typeof speaker!=="object") return speaker;
+        if(speaker.name===legacySpeakerName){
+          speakersChanged=true;
+          return Object.assign({},DEFAULT_SPEAKERS[3]);
+        }
+        var known=DEFAULT_SPEAKERS.filter(function(candidate){ return candidate.name===speaker.name; })[0];
+        if(!known) return speaker;
+        var photo=speaker.photo||known.photo;
+        var photoPosition=speaker.photoPosition||known.photoPosition;
+        if(photo===speaker.photo&&photoPosition===speaker.photoPosition) return speaker;
+        speakersChanged=true;
+        return Object.assign({},speaker,{photo:photo,photoPosition:photoPosition});
+      });
+      if(speakersChanged) next=Object.assign({},next,{speakers:migratedSpeakers});
     }
     return next;
   }
@@ -981,20 +1024,91 @@
 
   /* ---- speakers ---- */
   function initials(name){
-    var p = name.trim().replace(/^(Dr|A\/Prof|Prof|Mr|Ms|Mrs)\.?\s+/i,"").split(/\s+/);
+    var p = name.trim().replace(/^(Dr|A\/Prof|Prof|Professor|Mr|Ms|Mrs)\.?\s+/i,"").split(/\s+/);
     return ((p[0]||"")[0]||"")+((p[1]||"")[0]||"");
   }
   function esc(t){ return (t==null?"":String(t)).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function speakerColor(value){ return value==="#d52b1e" ? "#d52b1e" : "#171717"; }
+  function speakerPosition(value){ return /^\d{1,3}(?:\.\d+)?% \d{1,3}(?:\.\d+)?%$/.test(value||"") ? value : "50% 50%"; }
+  function middleSpeakerIndex(count){ return count ? Math.floor((count-1)/2) : -1; }
+  var activeSpeakerIndex=-1;
+  var speakerPointerStart=null;
+  var suppressSpeakerClick=false;
+
+  function setActiveSpeaker(index, options){
+    options=options||{};
+    var cards=$$(".spk",$("#speakers"));
+    var count=cards.length;
+    var prev=$("#spkPrev"),next=$("#spkNext"),status=$("#spkStatus");
+    if(!count){
+      activeSpeakerIndex=-1;
+      if(prev) prev.disabled=true;
+      if(next) next.disabled=true;
+      if(status) status.textContent="No speakers available";
+      return;
+    }
+    var normalized=((index%count)+count)%count;
+    activeSpeakerIndex=normalized;
+    cards.forEach(function(card,i){
+      var active=i===normalized;
+      var toggle=$(".spk-toggle",card),info=$(".info",card);
+      card.classList.toggle("is-active",active);
+      if(toggle){
+        toggle.setAttribute("aria-expanded",active ? "true" : "false");
+        toggle.tabIndex=active ? 0 : -1;
+      }
+      if(info) info.setAttribute("aria-hidden",active ? "false" : "true");
+    });
+    if(prev) prev.disabled=count<2;
+    if(next) next.disabled=count<2;
+    var speaker=state.speakers[normalized];
+    if(status) status.textContent="Speaker "+(normalized+1)+" of "+count+": "+speaker.name;
+    var activeToggle=$(".spk-toggle",cards[normalized]);
+    if(options.focus&&activeToggle) activeToggle.focus({preventScroll:true});
+    var mobile=false,reduce=false;
+    try{
+      mobile=window.matchMedia("(max-width:640px)").matches;
+      reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }catch(e){}
+    var track=$("#speakers");
+    if(options.scroll!==false&&mobile&&track&&track.scrollTo){
+      var activeCard=cards[normalized];
+      var centerCard=function(behavior){
+        var cardLeft=activeCard.getBoundingClientRect().left-track.getBoundingClientRect().left+track.scrollLeft;
+        var targetLeft=Math.max(0,cardLeft-(track.clientWidth-activeCard.offsetWidth)/2);
+        track.scrollTo({left:targetLeft,behavior:behavior});
+      };
+      centerCard(reduce||options.instant?"auto":"smooth");
+      if(!reduce){
+        var settle=function(e){
+          if(e.target!==activeCard||e.propertyName!=="flex-basis") return;
+          activeCard.removeEventListener("transitionend",settle);
+          if(activeCard.classList.contains("is-active")) centerCard("auto");
+        };
+        activeCard.addEventListener("transitionend",settle);
+        setTimeout(function(){ activeCard.removeEventListener("transitionend",settle); },800);
+      }
+    }
+  }
+
+  function stepSpeaker(delta, options){
+    if(!state.speakers.length) return;
+    setActiveSpeaker(activeSpeakerIndex+delta,options||{focus:true,scroll:true});
+  }
+
   function renderSpeakers(){
     var wrap = $("#speakers"); wrap.innerHTML = "";
     state.speakers.forEach(function(s, i){
-      var c = document.createElement("div"); c.className="spk";
+      var c = document.createElement("article");
+      c.className="spk";
+      c.setAttribute("role","listitem");
+      c.style.setProperty("--speaker-position",speakerPosition(s.photoPosition));
+      var infoId="spk-info-"+i;
       var face = s.photo
-        ? '<div class="face"><img src="'+esc(s.photo)+'" alt="'+esc(s.name)+'"></div>'
+        ? '<div class="face"><img src="'+esc(s.photo)+'" alt="'+esc(s.name)+'" loading="lazy" decoding="async"></div>'
         : '<div class="face" style="background:'+speakerColor(s.color)+'">'+esc(initials(s.name))+'</div>';
-      c.innerHTML = face +
-        '<div class="info"><span class="role">'+esc(s.role)+'</span><h3>'+esc(s.name)+'</h3><div class="aff">'+esc(s.aff)+'</div></div>'+
+      c.innerHTML = '<button type="button" class="spk-toggle" data-spk="'+i+'" aria-expanded="false" aria-controls="'+infoId+'" aria-label="Speaker '+(i+1)+' of '+state.speakers.length+': '+esc(s.name)+'">'+face+
+        '<span class="info" id="'+infoId+'" aria-hidden="true"><span class="role">'+esc(s.role)+'</span><span class="spk-name">'+esc(s.name)+'</span><span class="aff">'+esc(s.aff)+'</span></span></button>'+
         '<button class="rm" title="Remove" data-rm="'+i+'">×</button>';
       wrap.appendChild(c);
     });
@@ -1009,12 +1123,52 @@
         e.stopPropagation();
         var idx = +b.getAttribute("data-rm");
         if(confirm("Remove "+state.speakers[idx].name+"?")){
-          state = Object.assign({}, state, {speakers:state.speakers.filter(function(_,i){ return i!==idx; })});
+          var speakers=state.speakers.filter(function(_,i){ return i!==idx; });
+          if(!speakers.length) activeSpeakerIndex=-1;
+          else if(idx<activeSpeakerIndex) activeSpeakerIndex-=1;
+          else if(idx===activeSpeakerIndex) activeSpeakerIndex=Math.min(idx,speakers.length-1);
+          state = Object.assign({}, state, {speakers:speakers});
           save(); renderSpeakers();
         }
       });
     });
+    if(activeSpeakerIndex<0||activeSpeakerIndex>=state.speakers.length){
+      activeSpeakerIndex=middleSpeakerIndex(state.speakers.length);
+    }
+    setActiveSpeaker(activeSpeakerIndex,{scroll:true,instant:true});
   }
+
+  var speakerTrack=$("#speakers");
+  speakerTrack.addEventListener("click",function(e){
+    var target=e.target.closest ? e.target.closest("[data-spk]") : null;
+    if(!target) return;
+    if(suppressSpeakerClick){ suppressSpeakerClick=false; e.preventDefault(); return; }
+    setActiveSpeaker(+target.getAttribute("data-spk"),{scroll:true});
+  });
+  speakerTrack.addEventListener("keydown",function(e){
+    if(e.key==="ArrowLeft"||e.key==="ArrowRight"||e.key==="Home"||e.key==="End") e.preventDefault();
+    if(e.key==="ArrowLeft") stepSpeaker(-1,{focus:true,scroll:true});
+    else if(e.key==="ArrowRight") stepSpeaker(1,{focus:true,scroll:true});
+    else if(e.key==="Home") setActiveSpeaker(0,{focus:true,scroll:true});
+    else if(e.key==="End") setActiveSpeaker(state.speakers.length-1,{focus:true,scroll:true});
+  });
+  speakerTrack.addEventListener("pointerdown",function(e){
+    if(e.button!==0||e.target.closest("[data-rm],.spk-add")) return;
+    speakerPointerStart={id:e.pointerId,x:e.clientX,y:e.clientY};
+  });
+  speakerTrack.addEventListener("pointerup",function(e){
+    if(!speakerPointerStart||speakerPointerStart.id!==e.pointerId) return;
+    var dx=e.clientX-speakerPointerStart.x,dy=e.clientY-speakerPointerStart.y;
+    speakerPointerStart=null;
+    if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+      suppressSpeakerClick=true;
+      stepSpeaker(dx<0?1:-1,{focus:false,scroll:true});
+      setTimeout(function(){ suppressSpeakerClick=false; },0);
+    }
+  });
+  speakerTrack.addEventListener("pointercancel",function(){ speakerPointerStart=null; });
+  $("#spkPrev").addEventListener("click",function(){ stepSpeaker(-1,{focus:true,scroll:true}); });
+  $("#spkNext").addEventListener("click",function(){ stepSpeaker(1,{focus:true,scroll:true}); });
 
   /* ---- edit mode ---- */
   var editing = false;
@@ -1143,7 +1297,8 @@
   });
   $("#spkSave").addEventListener("click", function(){
     var name=$("#spkName").value.trim(); if(!name){ $("#spkName").focus(); return; }
-    var speaker = { name:name, role:$("#spkRole").value.trim()||"Discussant", aff:$("#spkAff").value.trim()||"", photo:$("#spkPhotoPath").value.trim(), color:PALETTE[state.speakers.length%PALETTE.length] };
+    var speaker = { name:name, role:$("#spkRole").value.trim()||"Discussant", aff:$("#spkAff").value.trim()||"", photo:$("#spkPhotoPath").value.trim(), photoPosition:"50% 50%", color:PALETTE[state.speakers.length%PALETTE.length] };
+    activeSpeakerIndex=state.speakers.length;
     state = Object.assign({}, state, {speakers:state.speakers.concat([speaker])});
     save(); renderSpeakers(); spkDlg.close();
   });

@@ -6,3 +6,12 @@
 
 # 편집 원본 영상에는 위치·기기 메타데이터가 있어 배포하지 않음
 assets/*_iOS.MOV
+
+# 인물 사진 원본은 로컬에 보존하고 메타데이터를 제거한 WebP만 배포
+assets/human/Hoon Han.jpg
+assets/human/JuHyun Lee.jpg
+assets/human/Michael Ostwald.jpg
+assets/human/Seung Yeul Ji.png
+
+# 제공된 UI 참조 자료는 로컬 검토용이며 런타임에는 포함하지 않음
+ref_systemstyle/

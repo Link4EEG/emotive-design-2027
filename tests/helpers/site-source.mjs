@@ -15,7 +15,8 @@ const ENTITY_REPLACEMENTS = Object.freeze({
 
 const MIME_TYPES = Object.freeze({
   '.html': 'text/html; charset=utf-8',
-  '.mp4': 'video/mp4'
+  '.mp4': 'video/mp4',
+  '.webp': 'image/webp'
 })
 
 export function normalizeVisibleText(html) {

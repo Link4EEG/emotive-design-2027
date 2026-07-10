@@ -14,8 +14,9 @@ import {
 const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8')
 const systemCss = html.match(/<style id="vignelli-system">([\s\S]*?)<\/style>/)?.[1] ?? ''
 const heroMarkup = html.match(/<header id="top">[\s\S]*?<\/header>/)?.[0] ?? ''
+const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, '')
 
-const EXPECTED_CONTENT_HASH = '2addce6d8d02a31db3d65ad9d7d0e805d9c468a92186cd47915ccba0589be071'
+const EXPECTED_CONTENT_HASH = '10e3f58709c8a58dc51bef94834d5412f2a9264f718a985c215eaab29af1f988'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -31,6 +32,46 @@ const SECTION_MARKERS = Object.freeze([
 
 test('preserves every visible text string from the approved content baseline', () => {
   assert.equal(sha256(normalizeVisibleText(html)), EXPECTED_CONTENT_HASH)
+})
+
+test('presents the event consistently as Roundabout across metadata and editable content', () => {
+  assert.doesNotMatch(html, /symposium|symposia/i)
+  assert.equal((staticMarkup.match(/Roundabout/g) ?? []).length, 7)
+  assert.match(html, /name="description" content="An international Roundabout/)
+  assert.match(html, /data-edit="hero\.sub"[^>]*>[^<]*international Roundabout/)
+  assert.match(html, /data-edit="about\.lead"[^>]*>[^<]*2027 Roundabout/)
+  assert.match(html, /data-edit="book\.h"[^>]*>The Roundabout is the launch of the book\./)
+  assert.match(html, /data-edit="mem\.title"[^>]*>Beyond the Roundabout:/)
+  assert.match(html, /data-edit="foot\.mid"[^>]*>[^<]*Book-linked Roundabout/)
+})
+
+test('migrates legacy saved event labels without mutating other saved edits', () => {
+  const script = extractInlineScript(html)
+  const migrationSource = script.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const input = {
+    text: {
+      hero: 'An international symposium and book launch',
+      plural: 'Prior symposia references',
+      custom: 'Keep this custom edit'
+    },
+    videos: { clip0: 'assets/hero-wave-brain.mp4', film1: 'custom-film.mp4' },
+    speakers: [{ name: 'Custom Speaker' }]
+  }
+
+  const context = { input }
+  new Script(`
+    var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+    ${migrationSource}
+    result=migrateState(input);
+  `).runInNewContext(context)
+
+  assert.equal(context.result.text.hero, 'An international Roundabout and book launch')
+  assert.equal(context.result.text.plural, 'Prior Roundabout references')
+  assert.equal(context.result.text.custom, input.text.custom)
+  assert.equal(context.result.videos.clip0, 'assets/hero-video.mp4')
+  assert.equal(context.result.videos.film1, input.videos.film1)
+  assert.equal(context.result.speakers, input.speakers)
+  assert.equal(input.text.hero, 'An international symposium and book launch')
 })
 
 test('preserves the complete section order and anchor structure', () => {
@@ -137,4 +178,10 @@ test('keeps navigation and dialogs keyboard-accessible', () => {
 
 test('retains mobile access to primary navigation links', () => {
   assert.match(systemCss, /@media\s*\(max-width:960px\)[\s\S]*?\.nav-links\s*\{[^}]*display:flex/s)
+})
+
+test('keeps the mobile edit control clear of the longer Roundabout hero copy', () => {
+  assert.match(html, /<button class="edit-fab"[^>]*aria-label="Edit page"[^>]*>\s*<span aria-hidden="true">✎<\/span><span class="edit-fab-label">Edit page<\/span>/)
+  assert.match(systemCss, /@media\s*\(max-width:420px\)[\s\S]*?\.edit-fab\s*\{[^}]*position:absolute[^}]*top:var\(--nav-h\)[^}]*bottom:auto/s)
+  assert.match(systemCss, /@media\s*\(max-width:420px\)[\s\S]*?\.edit-fab-label\s*\{[^}]*display:none/s)
 })

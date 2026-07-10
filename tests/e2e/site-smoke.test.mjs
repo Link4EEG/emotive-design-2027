@@ -18,6 +18,8 @@ test('serves the complete academic page and featured film over HTTP', async (con
   const page = await pageResponse.text()
   assert.match(page, /<title>Emotive Design 2027/)
   assert.match(page, /id="register"/)
+  assert.match(page, /international Roundabout/)
+  assert.doesNotMatch(page, /symposium|symposia/i)
 
   const heroResponse = await fetch(`${server.origin}/assets/hero-video.mp4`)
   assert.equal(heroResponse.status, 200)

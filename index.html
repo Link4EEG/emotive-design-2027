@@ -7,7 +7,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <script>document.documentElement.classList.add("js");</script>
 <title>Emotive Design 2027 | Brain, Space, and Machine Intelligence</title>
-<meta name="description" content="An international symposium and membership network on EEG, architecture, AI, multimodal emotion research, and adaptive human-centred environments.">
+<meta name="description" content="An international Roundabout and membership network on EEG, architecture, AI, multimodal emotion research, and adaptive human-centred environments.">
 <style>
   :root{
     --bg:#ffffff; --bg2:#f6f9fc; --ink:#0a2540; --muted:#5b6b83; --line:#e6ebf1;
@@ -511,6 +511,9 @@
     .spk-grid{grid-template-columns:1fr}
     .hero-ctas,.final .hero-ctas{display:grid;grid-template-columns:1fr}
     .hero-ctas .btn,.final .hero-ctas .btn{justify-content:center}
+    .edit-fab{position:absolute;top:var(--nav-h);right:10px;bottom:auto;width:44px;height:44px;padding:0;justify-content:center}
+    .edit-fab>span[aria-hidden]{font-size:18px;line-height:1}
+    .edit-fab-label{display:none}
   }
 
   @media (prefers-reduced-motion:reduce){
@@ -570,7 +573,7 @@
       <button class="btn btn-grad" data-openfilm>Watch the film</button>
       <a class="btn btn-ghost" href="#register">Register interest</a>
     </div>
-    <div class="hero-sub" data-edit="hero.sub">Brain, Space, and Machine Intelligence — an international symposium &amp; book launch</div>
+    <div class="hero-sub" data-edit="hero.sub">Brain, Space, and Machine Intelligence — an international Roundabout &amp; book launch</div>
   </div>
 </header>
 
@@ -578,7 +581,7 @@
 <section id="about" class="wrap reveal">
   <div class="kicker" data-edit="about.kicker">Event Overview</div>
   <h2 class="display" data-edit="about.title">A single day, a decade of research on how space is felt.</h2>
-  <p class="lead" data-edit="about.lead">Emotive Design reads the emotional and cognitive layers of spatial experience through EEG, eye-tracking, physiological signals, and machine intelligence — then returns that insight to design as adaptive, human-centred environments. The 2027 symposium marks the launch of the book of the same name.</p>
+  <p class="lead" data-edit="about.lead">Emotive Design reads the emotional and cognitive layers of spatial experience through EEG, eye-tracking, physiological signals, and machine intelligence — then returns that insight to design as adaptive, human-centred environments. The 2027 Roundabout marks the launch of the book of the same name.</p>
   <div class="value-grid">
     <div class="value">
       <div class="dot" style="background:var(--brain)"></div>
@@ -729,8 +732,8 @@
   </div>
   <div class="book-txt">
     <div class="kicker">The Book</div>
-    <h2 data-edit="book.h">The symposium is the launch of the book.</h2>
-    <p data-edit="book.p1">Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 symposium moves the book's four-part structure onto the stage.</p>
+    <h2 data-edit="book.h">The Roundabout is the launch of the book.</h2>
+    <p data-edit="book.p1">Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's four-part structure onto the stage.</p>
     <div class="book-parts">
       <span data-edit="book.pt1"><b>I · Brain</b> — Reading emotion</span>
       <span data-edit="book.pt2"><b>II · Space</b> — Testing in place</span>
@@ -745,7 +748,7 @@
 <div class="band">
 <section id="membership" class="wrap reveal">
   <div class="kicker">Membership</div>
-  <h2 class="display" data-edit="mem.title">Beyond the symposium: the Emotive network.</h2>
+  <h2 class="display" data-edit="mem.title">Beyond the Roundabout: the Emotive network.</h2>
   <p class="lead" data-edit="mem.lead">Membership is more than a ticket. Join the Emotive Design network to receive calls, workshop invitations, archive access, and future collaboration updates — the community that grows out of the book.</p>
   <div class="join-grid">
     <div class="join-card">
@@ -786,13 +789,13 @@
 <footer>
   <div class="foot-in">
     <div class="logo"><em>/emotive</em>&nbsp;DESIGN 2027</div>
-    <div data-edit="foot.mid">Brain, Space, and Machine Intelligence · Book-linked symposium</div>
+    <div data-edit="foot.mid">Brain, Space, and Machine Intelligence · Book-linked Roundabout</div>
     <div data-edit="foot.contact">For inquiries, email musicji83@gmail.com</div>
   </div>
 </footer>
 
 <!-- ============ EDIT MODE UI ============ -->
-<button class="edit-fab" id="editFab" title="Edit this page">✎ Edit page</button>
+<button class="edit-fab" id="editFab" title="Edit this page" aria-label="Edit page"><span aria-hidden="true">✎</span><span class="edit-fab-label">Edit page</span></button>
 <div class="edit-hint">Edit mode on — click any dashed text to rewrite it. Use the bar below to manage speakers, videos, and save.</div>
 <div class="edit-bar">
   <button class="ebtn" id="addSpk">+ Add speaker</button>
@@ -895,8 +898,26 @@
   ];
 
   function migrateState(value){
-    if(!value||!value.videos||value.videos.clip0!=="assets/hero-wave-brain.mp4") return value;
-    return Object.assign({}, value, {videos:Object.assign({},value.videos,{clip0:DEFAULT_VIDEOS.clip0})});
+    if(!value) return value;
+    var next=value;
+    if(value.videos&&value.videos.clip0==="assets/hero-wave-brain.mp4"){
+      next=Object.assign({},next,{videos:Object.assign({},value.videos,{clip0:DEFAULT_VIDEOS.clip0})});
+    }
+    if(value.text){
+      var legacyLabel=["sym","posium"].join("");
+      var legacyPlural=["sym","posia"].join("");
+      var labelPattern=new RegExp("\\b(?:"+legacyLabel+"|"+legacyPlural+")\\b","gi");
+      var textChanged=false;
+      var migratedText=Object.keys(value.text).reduce(function(result,key){
+        var original=value.text[key];
+        var renamed=typeof original==="string"?original.replace(labelPattern,"Roundabout"):original;
+        if(renamed!==original) textChanged=true;
+        result[key]=renamed;
+        return result;
+      },{});
+      if(textChanged) next=Object.assign({},next,{text:migratedText});
+    }
+    return next;
   }
 
   var state = load();

@@ -13,6 +13,7 @@ import {
 
 const html = await readFile(new URL('../../index.html', import.meta.url), 'utf8')
 const systemCss = html.match(/<style id="vignelli-system">([\s\S]*?)<\/style>/)?.[1] ?? ''
+const heroMarkup = html.match(/<header id="top">[\s\S]*?<\/header>/)?.[0] ?? ''
 
 const EXPECTED_CONTENT_HASH = '2addce6d8d02a31db3d65ad9d7d0e805d9c468a92186cd47915ccba0589be071'
 const SECTION_MARKERS = Object.freeze([
@@ -102,6 +103,16 @@ test('implements the Vignelli-inspired visual system contract', () => {
   assert.match(systemCss, /\.kicker\s*\{[^}]*position:sticky/s)
   assert.doesNotMatch(systemCss, /linear-gradient|radial-gradient/i)
   assert.doesNotMatch(systemCss, /box-shadow\s*:\s*(?!none)/i)
+})
+
+test('uses one unfiltered looping hero video with editorial title clearance', () => {
+  assert.equal((heroMarkup.match(/<video\b[^>]*data-heroclip="/g) ?? []).length, 1)
+  assert.match(heroMarkup, /<video data-heroclip="0"[^>]*autoplay[^>]*muted[^>]*loop[^>]*playsinline[^>]*class="live"/)
+  assert.match(html, /assets\/hero-video\.mp4/)
+  assert.match(systemCss, /\.hero-type\s*\{[^}]*padding-right:clamp\(/s)
+  assert.match(systemCss, /\.hero-media video\s*\{[^}]*filter:none/s)
+  assert.doesNotMatch(systemCss, /\.hero-media::after/)
+  assert.doesNotMatch(extractInlineScript(html), /setInterval\(rotate,\s*9000\)/)
 })
 
 test('wins the legacy cascade for spacing, sharp corners, and anchor offset', () => {

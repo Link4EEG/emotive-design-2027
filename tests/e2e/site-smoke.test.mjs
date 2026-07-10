@@ -19,6 +19,14 @@ test('serves the complete academic page and featured film over HTTP', async (con
   assert.match(page, /<title>Emotive Design 2027/)
   assert.match(page, /id="register"/)
 
+  const heroResponse = await fetch(`${server.origin}/assets/hero-video.mp4`)
+  assert.equal(heroResponse.status, 200)
+  assert.equal(heroResponse.headers.get('content-type'), 'video/mp4')
+  const heroReader = heroResponse.body?.getReader()
+  const heroChunk = await heroReader?.read()
+  assert.equal(Buffer.from(heroChunk?.value ?? []).subarray(4, 8).toString(), 'ftyp')
+  await heroReader?.cancel()
+
   const filmResponse = await fetch(`${server.origin}/assets/emotive-film-trailer.mp4`)
   assert.equal(filmResponse.status, 200)
   assert.equal(filmResponse.headers.get('content-type'), 'video/mp4')

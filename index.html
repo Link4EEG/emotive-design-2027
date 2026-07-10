@@ -296,11 +296,10 @@
 
   header{position:relative;min-height:100dvh;padding-top:var(--nav-h);display:flex;overflow:hidden;background:var(--paper)}
   .hero-media{position:absolute;inset:var(--nav-h) 0 0 auto;width:50%;height:auto;z-index:1;pointer-events:none;overflow:hidden;border-left:1px solid var(--ink);transform:none;-webkit-mask-image:none;mask-image:none}
-  .hero-media::after{content:"";position:absolute;inset:0;background:rgb(213 43 30 / .17);mix-blend-mode:multiply}
-  .hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;filter:grayscale(1) contrast(1.12);transition:opacity 1.2s cubic-bezier(.2,.7,.2,1)}
-  .hero-media video.live{opacity:.88}
+  .hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;filter:none;transition:opacity 1.2s cubic-bezier(.2,.7,.2,1)}
+  .hero-media video.live{opacity:1}
   .hero-inner{position:relative;z-index:3;width:100%;max-width:var(--maxw);min-height:calc(100dvh - var(--nav-h));margin:0 auto;padding:clamp(54px,7vw,96px) var(--edge) clamp(40px,5vw,72px);display:grid;grid-template-columns:var(--grid);column-gap:var(--gutter);align-content:start;text-align:left}
-  .hero-type{grid-column:1/8;margin:0 0 clamp(34px,5vw,72px);color:var(--ink);font-size:clamp(68px,10.4vw,166px);font-weight:700;line-height:.79;letter-spacing:-.085em;mix-blend-mode:normal;user-select:none}
+  .hero-type{grid-column:1/7;margin:0 0 clamp(34px,5vw,72px);padding-right:clamp(24px,4vw,72px);color:var(--ink);font-size:clamp(68px,10.4vw,166px);font-weight:700;line-height:.79;letter-spacing:-.085em;mix-blend-mode:normal;user-select:none}
   .hero-type .line{display:block;white-space:nowrap}
   .hero-type .l2{padding-left:0;letter-spacing:-.085em}
   .hero-info{grid-column:1/6;display:grid;grid-template-columns:1fr 1fr;align-items:start;gap:0;margin:0 0 28px;color:var(--ink);font-size:11px;font-weight:700;line-height:1.3;letter-spacing:.08em;text-transform:uppercase}
@@ -310,6 +309,7 @@
   .hero-sub{grid-column:1/6;margin:0 0 30px;max-width:48ch;color:var(--muted);font-size:clamp(15px,1.35vw,19px);font-weight:500;line-height:1.45;letter-spacing:-.015em}
   .hero-clip-edits{top:calc(var(--nav-h) + 16px);right:16px;z-index:7;gap:6px}
   .hero-clip-edits button{padding:8px 12px;border:1px solid var(--ink);background:var(--paper);color:var(--ink);font:600 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;box-shadow:none}
+  .hero-clip-edits button:not(:first-child){display:none}
 
   .value-grid{grid-column:4/13;grid-row:3;display:grid;grid-template-columns:1fr 1fr;gap:0 var(--gutter);margin:0}
   .value{min-height:190px;padding:24px 0 40px;border-top:1px solid var(--ink)}
@@ -476,7 +476,7 @@
     header{min-height:auto;flex-direction:column;padding-top:var(--nav-h)}
     .hero-inner{order:1;min-height:0;padding:48px var(--edge);grid-template-columns:var(--grid)}
     .hero-media{position:relative;inset:auto;order:2;width:100%;height:auto;aspect-ratio:4/3;border-top:1px solid var(--ink);border-left:0}
-    .hero-type{grid-column:1/5;margin-bottom:42px;font-size:clamp(58px,20vw,92px)}
+    .hero-type{grid-column:1/5;margin-bottom:42px;padding-right:0;font-size:clamp(58px,20vw,92px)}
     .hero-info,.hero-sub,.hero-ctas{grid-column:1/5}
     .hero-info{grid-template-columns:1fr 1fr}
     .value-grid,.stream-grid{grid-template-columns:1fr}
@@ -548,8 +548,6 @@
 <header id="top">
   <div class="hero-media" aria-hidden="true">
     <video data-heroclip="0" autoplay muted loop playsinline class="live"></video>
-    <video data-heroclip="1" autoplay muted loop playsinline></video>
-    <video data-heroclip="2" autoplay muted loop playsinline></video>
   </div>
   <div class="hero-clip-edits">
     <button data-clipedit="0">✎ Clip 1 · Brain</button>
@@ -877,15 +875,14 @@
   "use strict";
   var LS = "emotive2027_v2" + (window.__EMOTIVE_EXPORT_ID__ ? "_"+window.__EMOTIVE_EXPORT_ID__ : "");
 
-  /* Hero clips stream from the Higgsfield CDN by default; if you save local
-     copies into /assets with these names, the local files win automatically. */
+  /* The primary hero video is local for reliable playback and export. */
   var CDN = {
-    clip0: "https://d8j0ntlcm91z4.cloudfront.net/user_39lWJ8KXHpz2VeGj60wxByfHjlE/hf_20260704_135555_0dcd2e11-4ea9-4274-83ec-7083d3532a00.mp4",
+    clip0: "",
     clip1: "https://d8j0ntlcm91z4.cloudfront.net/user_39lWJ8KXHpz2VeGj60wxByfHjlE/hf_20260704_135557_ace5feec-8841-4db3-b18e-058c07d3fd25.mp4",
     clip2: "https://d8j0ntlcm91z4.cloudfront.net/user_39lWJ8KXHpz2VeGj60wxByfHjlE/hf_20260704_135600_bf026f18-274d-45a9-a44c-94ea47647c62.mp4"
   };
   var DEFAULT_VIDEOS = {
-    clip0: "assets/hero-wave-brain.mp4",
+    clip0: "assets/hero-video.mp4",
     clip1: "assets/hero-wave-space.mp4",
     clip2: "assets/hero-wave-machine.mp4",
     film1: "assets/emotive-film-trailer.mp4"
@@ -897,10 +894,15 @@
     {name:"Prof Mijeong Kim", role:"Discussant", aff:"Hanyang University", color:"#d52b1e", photo:""}
   ];
 
+  function migrateState(value){
+    if(!value||!value.videos||value.videos.clip0!=="assets/hero-wave-brain.mp4") return value;
+    return Object.assign({}, value, {videos:Object.assign({},value.videos,{clip0:DEFAULT_VIDEOS.clip0})});
+  }
+
   var state = load();
   function load(){
-    try{ var s = JSON.parse(localStorage.getItem(LS)); if(s&&s.videos&&s.speakers) return s; }catch(e){}
-    if(window.__EMOTIVE_BAKED__){ try{ return JSON.parse(JSON.stringify(window.__EMOTIVE_BAKED__)); }catch(e){} }
+    try{ var s = JSON.parse(localStorage.getItem(LS)); if(s&&s.videos&&s.speakers) return migrateState(s); }catch(e){}
+    if(window.__EMOTIVE_BAKED__){ try{ return migrateState(JSON.parse(JSON.stringify(window.__EMOTIVE_BAKED__))); }catch(e){} }
     return { text:{}, videos:Object.assign({},DEFAULT_VIDEOS), speakers:JSON.parse(JSON.stringify(DEFAULT_SPEAKERS)) };
   }
   function save(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
@@ -947,7 +949,7 @@
     if(v.autoplay){ var p=v.play(); if(p&&p.catch) p.catch(function(){}); }
   }
   function applyVideos(){
-    ["clip0","clip1","clip2"].forEach(function(k,i){
+    ["clip0"].forEach(function(k,i){
       var v = $('[data-heroclip="'+i+'"]'); if(!v) return;
       v.setAttribute("data-fallback", (state.videos[k]===DEFAULT_VIDEOS[k] && CDN[k].indexOf("http")===0) ? CDN[k] : "");
       setVideoSrc(v, state.videos[k]);
@@ -955,18 +957,6 @@
     var f = $('[data-film="1"]'); if(f) setVideoSrc(f, state.videos.film1);
     var fd = $("#filmDlgVideo"); if(fd) setVideoSrc(fd, state.videos.film1);
   }
-
-  /* ---- hero clip rotation (3 clips crossfade) ---- */
-  var cur = 0;
-  function rotate(){
-    var vids = $$(".hero-media video"); if(vids.length<2) return;
-    cur = (cur+1)%vids.length;
-    vids.forEach(function(v,i){ v.classList.toggle("live", i===cur); });
-    var nv = vids[cur]; if(nv.paused){ var p=nv.play(); if(p&&p.catch)p.catch(function(){}); }
-  }
-  var reduceMotion = false;
-  try{ reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
-  if(!reduceMotion){ setInterval(rotate, 9000); }
 
   /* ---- speakers ---- */
   function initials(name){

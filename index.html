@@ -587,7 +587,7 @@
       <span class="line l2" data-edit="hero.line2">DESIGN</span>
     </h1>
     <div class="hero-info">
-      <span data-edit="hero.i1">OCT 2027</span>
+      <span data-edit="hero.i1">22–25 MAR 2027</span>
       <span data-edit="hero.i2">Hybrid</span>
       <span data-edit="hero.i3">Sydney / Seoul</span>
       <span data-edit="hero.i4">Venue TBC</span>
@@ -603,7 +603,7 @@
 <!-- ============ ABOUT / VALUE ============ -->
 <section id="about" class="wrap reveal">
   <div class="kicker" data-edit="about.kicker">Event Overview</div>
-  <h2 class="display" data-edit="about.title">A single day, a decade of research on how space is felt.</h2>
+  <h2 class="display" data-edit="about.title">Four days, a decade of research on how space is felt.</h2>
   <p class="lead" data-edit="about.lead">Emotive Design reads the emotional and cognitive layers of spatial experience through EEG, eye-tracking, physiological signals, and machine intelligence — then returns that insight to design as adaptive, human-centred environments. The 2027 Roundabout marks the launch of the book of the same name.</p>
   <div class="value-grid">
     <div class="value">
@@ -674,7 +674,7 @@
       <div><b data-c="m">—</b><span>Minutes</span></div>
       <div><b data-c="s">—</b><span>Seconds</span></div>
     </div>
-    <p class="count-note">Target date <span data-edit="count.date">1 October 2027</span> · <span data-edit="count.place">Venue to be confirmed — Sydney or Seoul, hybrid format planned.</span></p>
+    <p class="count-note">Event dates <span data-edit="count.date">22–25 March 2027</span> · <span data-edit="count.place">Countdown reference: 09:00 AEDT on 22 March. Venue to be confirmed — Sydney or Seoul, hybrid format planned.</span></p>
   </div>
 </div>
 
@@ -683,7 +683,7 @@
 <section id="program" class="wrap reveal">
   <div class="kicker">Talks</div>
   <h2 class="display" data-edit="prog.title">Join the conversation.</h2>
-  <p class="lead" data-edit="prog.lead">A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.</p>
+  <p class="lead" data-edit="prog.lead">A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.</p>
   <div style="margin-top:40px">
     <div class="talk">
       <div class="time" data-edit="p1.time">09:00</div>
@@ -805,7 +805,7 @@
   <div class="kicker" style="justify-content:center">Save your spot</div>
   <h2 data-edit="fin.title">Join Emotive Design 2027</h2>
   <div class="info-line">
-    <span data-edit="fin.c1">OCT 2027</span>
+    <span data-edit="fin.c1">22–25 MAR 2027</span>
     <span data-edit="fin.c2">Hybrid</span>
     <span data-edit="fin.c3">Sydney / Seoul</span>
   </div>
@@ -937,10 +937,27 @@
       var legacyLabel=["sym","posium"].join("");
       var legacyPlural=["sym","posia"].join("");
       var labelPattern=new RegExp("\\b(?:"+legacyLabel+"|"+legacyPlural+")\\b","gi");
+      var legacyContent={
+        "hero.i1":"OCT 2027",
+        "count.date":"1 October 2027",
+        "count.place":"Venue to be confirmed — Sydney or Seoul, hybrid format planned.",
+        "fin.c1":"OCT 2027",
+        "about.title":"A single day, a decade of research on how space is felt.",
+        "prog.lead":"A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative."
+      };
+      var currentContent={
+        "hero.i1":"22–25 MAR 2027",
+        "count.date":"22–25 March 2027",
+        "count.place":"Countdown reference: 09:00 AEDT on 22 March. Venue to be confirmed — Sydney or Seoul, hybrid format planned.",
+        "fin.c1":"22–25 MAR 2027",
+        "about.title":"Four days, a decade of research on how space is felt.",
+        "prog.lead":"A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative."
+      };
       var textChanged=false;
       var migratedText=Object.keys(value.text).reduce(function(result,key){
         var original=value.text[key];
         var renamed=typeof original==="string"?original.replace(labelPattern,"Roundabout"):original;
+        if(renamed===legacyContent[key]) renamed=currentContent[key];
         if(renamed!==original) textChanged=true;
         result[key]=renamed;
         return result;
@@ -1344,7 +1361,7 @@
 
   /* ---- countdown ---- */
   function tick(){
-    var target = new Date(2027,9,1,9,0,0).getTime(); // 1 Oct 2027 09:00
+    var target = Date.parse("2027-03-22T09:00:00+11:00"); // 22 Mar 2027 09:00 AEDT
     var diff = Math.max(0, target-Date.now());
     var d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5),m=Math.floor(diff%36e5/6e4),s=Math.floor(diff%6e4/1e3);
     var set=function(k,v){var el=$('[data-c="'+k+'"]'); if(el) el.textContent=(v<10?"0":"")+v;};

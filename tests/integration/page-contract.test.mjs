@@ -18,7 +18,7 @@ const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, ''
 const appScript = extractInlineScript(html)
 const seungPortrait = await readFile(new URL('../../assets/human/seung-yeul-ji.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = '17528570c56ddab03abe30cc4226c4e7f780e3f5302408b1764dedb4c98c3428'
+const EXPECTED_CONTENT_HASH = '3133b5dd87187ff6d201fcbf1cc6327493de41867f3e3e7abb3e9b94a21d6c14'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -47,6 +47,18 @@ test('presents the event consistently as Roundabout across metadata and editable
   assert.match(html, /data-edit="foot\.mid"[^>]*>[^<]*Book-linked Roundabout/)
 })
 
+test('publishes the four-day March 2027 event schedule consistently', () => {
+  assert.equal((staticMarkup.match(/22–25 MAR 2027/g) ?? []).length, 2)
+  assert.match(staticMarkup, /data-edit="count\.date"[^>]*>22–25 March 2027</)
+  assert.match(staticMarkup, /data-edit="about\.title"[^>]*>Four days, a decade of research on how space is felt\.</)
+  assert.match(staticMarkup, /data-edit="prog\.lead"[^>]*>A four-day proposal\./)
+  assert.doesNotMatch(staticMarkup, /A single day|A full-day proposal/)
+  assert.match(staticMarkup, /Countdown reference: 09:00 AEDT on 22 March/)
+  assert.match(appScript, /Date\.parse\("2027-03-22T09:00:00\+11:00"\)/)
+  assert.doesNotMatch(staticMarkup, /OCT 2027|1 October 2027/)
+  assert.doesNotMatch(appScript, /new Date\(2027,/)
+})
+
 test('migrates legacy saved event labels without mutating other saved edits', () => {
   const script = extractInlineScript(html)
   const defaultsSource = script.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
@@ -55,7 +67,13 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
     text: {
       hero: 'An international symposium and book launch',
       plural: 'Prior symposia references',
-      custom: 'Keep this custom edit'
+      custom: 'Keep this custom edit',
+      'hero.i1': 'OCT 2027',
+      'count.date': '1 October 2027',
+      'fin.c1': 'OCT 2027',
+      'count.place': 'Venue to be confirmed — Sydney or Seoul, hybrid format planned.',
+      'about.title': 'A single day, a decade of research on how space is felt.',
+      'prog.lead': 'A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
     },
     videos: { clip0: 'assets/hero-wave-brain.mp4', film1: 'custom-film.mp4' },
     speakers: [{ name: 'Custom Speaker' }]
@@ -72,6 +90,12 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
   assert.equal(context.result.text.hero, 'An international Roundabout and book launch')
   assert.equal(context.result.text.plural, 'Prior Roundabout references')
   assert.equal(context.result.text.custom, input.text.custom)
+  assert.equal(context.result.text['hero.i1'], '22–25 MAR 2027')
+  assert.equal(context.result.text['count.date'], '22–25 March 2027')
+  assert.equal(context.result.text['fin.c1'], '22–25 MAR 2027')
+  assert.match(context.result.text['count.place'], /^Countdown reference: 09:00 AEDT on 22 March\./)
+  assert.equal(context.result.text['about.title'], 'Four days, a decade of research on how space is felt.')
+  assert.match(context.result.text['prog.lead'], /^A four-day proposal\./)
   assert.equal(context.result.videos.clip0, 'assets/hero-video.mp4')
   assert.equal(context.result.videos.film1, input.videos.film1)
   assert.equal(context.result.speakers, input.speakers)
@@ -126,7 +150,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
 })
 
 test('ships the updated Seung Yeul Ji portrait rather than the previous image', () => {
-  const approvedPortraitHash = '63c9e7138a5782517f8657f18497cac7084bd9388c7a7aafd573cd9bbb512518'
+  const approvedPortraitHash = '6879749c49e7d0724b709e8f2fef8a701d00f1adec4385bbd94cdcddcfb96ce4'
   assert.equal(sha256(seungPortrait), approvedPortraitHash)
   assert.equal(seungPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(seungPortrait.subarray(8, 12).toString(), 'WEBP')

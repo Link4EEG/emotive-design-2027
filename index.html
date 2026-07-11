@@ -924,7 +924,7 @@
     {name:"Dr Seung Yeul Ji", role:"Keynote · Author", aff:"Hanyang University · Visiting Senior Fellow, UNSW Sydney", color:"#171717", photo:"assets/human/seung-yeul-ji.webp", photoPosition:"50% 28%"},
     {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:"assets/human/ju-hyun-lee.webp", photoPosition:"50% 42%"},
     {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:"assets/human/michael-ostwald.webp", photoPosition:"50% 44%"},
-    {name:"Professor Hoon Han", role:"Discussant", aff:"UNSW Sydney · Director, UNSW Cities Institute", color:"#d52b1e", photo:"assets/human/hoon-han.webp", photoPosition:"50% 42%"}
+    {name:"Prof Hanjong Jun", role:"Discussant", aff:"Hanyang University · School of Architecture", color:"#d52b1e", photo:"assets/human/hanjong-jun.webp", photoPosition:"50% 38%"}
   ];
 
   function migrateState(value){
@@ -965,11 +965,14 @@
       if(textChanged) next=Object.assign({},next,{text:migratedText});
     }
     if(Array.isArray(value.speakers)){
-      var legacySpeakerName=["Prof Mijeong"," Kim"].join("");
+      var legacySpeakerNames=[
+        ["Prof Mijeong"," Kim"].join(""),
+        ["Professor Hoon"," Han"].join("")
+      ];
       var speakersChanged=false;
       var migratedSpeakers=value.speakers.map(function(speaker){
         if(!speaker||typeof speaker!=="object") return speaker;
-        if(speaker.name===legacySpeakerName){
+        if(legacySpeakerNames.indexOf(speaker.name)!==-1){
           speakersChanged=true;
           return Object.assign({},DEFAULT_SPEAKERS[3]);
         }

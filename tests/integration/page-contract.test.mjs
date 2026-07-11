@@ -17,6 +17,7 @@ const heroMarkup = html.match(/<header id="top">[\s\S]*?<\/header>/)?.[0] ?? ''
 const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, '')
 const appScript = extractInlineScript(html)
 const seungPortrait = await readFile(new URL('../../assets/human/seung-yeul-ji.webp', import.meta.url))
+const hanjongPortrait = await readFile(new URL('../../assets/human/hanjong-jun.webp', import.meta.url))
 
 const EXPECTED_CONTENT_HASH = '3133b5dd87187ff6d201fcbf1cc6327493de41867f3e3e7abb3e9b94a21d6c14'
 const SECTION_MARKERS = Object.freeze([
@@ -117,10 +118,10 @@ test('preserves all 101 editable content bindings', () => {
 })
 
 test('preserves runtime content, media, registration, and editor storage contracts', () => {
-  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Professor Hoon Han']) {
+  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun']) {
     assert.ok(html.includes(speaker), `missing speaker: ${speaker}`)
   }
-  assert.doesNotMatch(html, /Prof Mijeong Kim/)
+  assert.doesNotMatch(html, /Prof Mijeong Kim|Hoon Han|hoon-han/)
 
   for (const contract of [
     'emotive2027_v2',
@@ -145,7 +146,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', photo: 'assets/human/seung-yeul-ji.webp', photoPosition: '50% 28%' },
     { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%' },
     { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%' },
-    { name: 'Professor Hoon Han', role: 'Discussant', aff: 'UNSW Sydney · Director, UNSW Cities Institute', photo: 'assets/human/hoon-han.webp', photoPosition: '50% 42%' }
+    { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%' }
   ])
 })
 
@@ -154,6 +155,13 @@ test('ships the updated Seung Yeul Ji portrait rather than the previous image', 
   assert.equal(sha256(seungPortrait), approvedPortraitHash)
   assert.equal(seungPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(seungPortrait.subarray(8, 12).toString(), 'WEBP')
+})
+
+test('ships the approved metadata-free Hanjong Jun portrait', () => {
+  const approvedPortraitHash = '9e55de99fe28c8d653ebd67ee1d10f4b3d0d9cf9aa5089d9275cc70b052d7e19'
+  assert.equal(sha256(hanjongPortrait), approvedPortraitHash)
+  assert.equal(hanjongPortrait.subarray(0, 4).toString(), 'RIFF')
+  assert.equal(hanjongPortrait.subarray(8, 12).toString(), 'WEBP')
 })
 
 test('implements an accessible expanding speaker accordion carousel', () => {
@@ -215,7 +223,7 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
       { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', color: '#171717', photo: '' },
       { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', color: '#d52b1e', photo: 'custom-ju.jpg' },
       { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', color: '#171717', photo: '' },
-      { name: 'Prof Mijeong Kim', role: 'Discussant', aff: 'Hanyang University', color: '#d52b1e', photo: '' },
+      { name: 'Professor Hoon Han', role: 'Discussant', aff: 'UNSW Sydney · Director, UNSW Cities Institute', color: '#d52b1e', photo: 'assets/human/hoon-han.webp' },
       { name: 'Custom Participant', role: 'Guest', aff: 'Custom Institute', color: '#171717', photo: 'custom.jpg' }
     ]
   }
@@ -230,13 +238,38 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
   `).runInNewContext(context)
 
   assert.deepEqual(Array.from(context.result.speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Professor Hoon Han', 'Custom Participant'
+    'Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Custom Participant'
   ])
   assert.equal(context.result.speakers[0].photo, 'assets/human/seung-yeul-ji.webp')
   assert.equal(context.result.speakers[1].photo, 'custom-ju.jpg')
   assert.equal(context.result.speakers[2].photoPosition, '50% 44%')
-  assert.equal(context.result.speakers[3].aff, 'UNSW Sydney · Director, UNSW Cities Institute')
+  assert.equal(context.result.speakers[3].aff, 'Hanyang University · School of Architecture')
+  assert.equal(context.result.speakers[3].photo, 'assets/human/hanjong-jun.webp')
   assert.equal(context.result.speakers[4].photo, 'custom.jpg')
+  assert.deepEqual(input, original)
+})
+
+test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {
+  const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const input = {
+    text: {},
+    videos: {},
+    speakers: [{ name: 'Prof Mijeong Kim', role: 'Discussant', aff: 'Hanyang University', photo: '' }]
+  }
+  const original = JSON.parse(JSON.stringify(input))
+  const context = { input }
+
+  new Script(`
+    var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+    ${defaults}
+    ${migration}
+    result=migrateState(input);
+  `).runInNewContext(context)
+
+  assert.equal(context.result.speakers[0].name, 'Prof Hanjong Jun')
+  assert.equal(context.result.speakers[0].aff, 'Hanyang University · School of Architecture')
+  assert.equal(context.result.speakers[0].photo, 'assets/human/hanjong-jun.webp')
   assert.deepEqual(input, original)
 })
 

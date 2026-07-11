@@ -29,7 +29,7 @@ test('serves the complete academic page and featured film over HTTP', async (con
   assert.equal(Buffer.from(heroChunk?.value ?? []).subarray(4, 8).toString(), 'ftyp')
   await heroReader?.cancel()
 
-  for (const portrait of ['seung-yeul-ji.webp', 'ju-hyun-lee.webp', 'michael-ostwald.webp', 'hoon-han.webp']) {
+  for (const portrait of ['seung-yeul-ji.webp', 'ju-hyun-lee.webp', 'michael-ostwald.webp', 'hanjong-jun.webp']) {
     const portraitResponse = await fetch(`${server.origin}/assets/human/${portrait}`)
     assert.equal(portraitResponse.status, 200)
     assert.equal(portraitResponse.headers.get('content-type'), 'image/webp')
@@ -37,6 +37,9 @@ test('serves the complete academic page and featured film over HTTP', async (con
     assert.equal(portraitBytes.subarray(0, 4).toString(), 'RIFF')
     assert.equal(portraitBytes.subarray(8, 12).toString(), 'WEBP')
   }
+
+  const removedPortraitResponse = await fetch(`${server.origin}/assets/human/hoon-han.webp`)
+  assert.equal(removedPortraitResponse.status, 404)
 
   const filmResponse = await fetch(`${server.origin}/assets/emotive-film-trailer.mp4`)
   assert.equal(filmResponse.status, 200)

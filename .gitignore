@@ -9,6 +9,7 @@ assets/*_iOS.MOV
 
 # 인물 사진 원본은 로컬에 보존하고 메타데이터를 제거한 WebP만 배포
 assets/human/Hoon Han.jpg
+assets/human/HanJong Jun.jpg
 assets/human/JuHyun Lee.jpg
 assets/human/Michael Ostwald.jpg
 assets/human/Seung Yeul Ji.png

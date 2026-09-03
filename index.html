@@ -363,8 +363,8 @@
   .spk-nav:hover,.spk-nav:focus-visible{background:var(--accent);color:var(--white);border-color:var(--accent)}
   .spk-nav:disabled{cursor:not-allowed;opacity:.35}
   .spk-grid{display:flex;flex-wrap:nowrap;gap:12px;width:100%;height:clamp(430px,42vw,560px);margin:0;overflow:hidden}
-  .spk{position:relative;isolation:isolate;flex:0 0 clamp(90px,8vw,130px);height:clamp(430px,42vw,560px);border:1px solid var(--ink);border-radius:12px!important;background:var(--ink);box-shadow:none;overflow:hidden;transition:flex-basis .65s cubic-bezier(.2,.7,.2,1)}
-  .spk.is-active{flex-basis:52%}
+  .spk{position:relative;isolation:isolate;flex:0 1 clamp(90px,8vw,130px);min-width:0;height:clamp(430px,42vw,560px);border:1px solid var(--ink);border-radius:12px!important;background:var(--ink);box-shadow:none;overflow:hidden;transition:flex-basis .65s cubic-bezier(.2,.7,.2,1)}
+  .spk.is-active{flex:0 0 52%}
   .spk:hover{transform:none;box-shadow:none}
   .spk-toggle{position:absolute;inset:0;z-index:auto;width:100%;height:100%;padding:0;border:0;background:transparent;color:var(--white);cursor:pointer;text-align:left}
   .spk-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:-5px}
@@ -924,7 +924,22 @@
     {name:"Dr Seung Yeul Ji", role:"Keynote · Author", aff:"Hanyang University · Visiting Senior Fellow, UNSW Sydney", color:"#171717", photo:"assets/human/seung-yeul-ji.webp", photoPosition:"50% 28%"},
     {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:"assets/human/ju-hyun-lee.webp", photoPosition:"50% 42%"},
     {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:"assets/human/michael-ostwald.webp", photoPosition:"50% 44%"},
-    {name:"Prof Hanjong Jun", role:"Discussant", aff:"Hanyang University · School of Architecture", color:"#d52b1e", photo:"assets/human/hanjong-jun.webp", photoPosition:"50% 38%"}
+    {name:"Prof Hanjong Jun", role:"Discussant", aff:"Hanyang University · School of Architecture", color:"#d52b1e", photo:"assets/human/hanjong-jun.webp", photoPosition:"50% 38%"},
+    {name:"Prof Kyung Ho Ko", role:"Discussant", aff:"Hongik University · Department of Sculpture", color:"#171717", photo:"assets/human/kyung-ho-ko.webp", photoPosition:"50% 30%"},
+    {name:"Prof Yeon Shim Chung", role:"Discussant", aff:"Hongik University · Department of Art History and Theory", color:"#d52b1e", photo:"assets/human/yeon-shim-chung.webp", photoPosition:"50% 12%"},
+    {name:"Prof Luo Mi", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab", color:"#171717", photo:"assets/human/luo-mi.webp", photoPosition:"50% 0%"},
+    {name:"Prof Yun Kyung Lee", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab", color:"#d52b1e", photo:"assets/human/yun-kyung-lee.webp", photoPosition:"50% 10%"}
+  ];
+
+  /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.
+     저장된 명단은 자기 판보다 나중에 확정된 연사만 한 번 이어받으므로,
+     이미 본 뒤 직접 지운 연사는 다음 판에서도 되살아나지 않습니다. */
+  var ROSTER_VERSION = 4;
+  var ROSTER_ADDITIONS = [
+    {version:2, name:"Prof Kyung Ho Ko"},
+    {version:3, name:"Prof Yeon Shim Chung"},
+    {version:4, name:"Prof Luo Mi"},
+    {version:4, name:"Prof Yun Kyung Lee"}
   ];
 
   function migrateState(value){
@@ -984,8 +999,21 @@
         speakersChanged=true;
         return Object.assign({},speaker,{photo:photo,photoPosition:photoPosition});
       });
+      var savedRosterVersion=value.rosterVersion||0;
+      if(savedRosterVersion<ROSTER_VERSION){
+        var rosterNames=migratedSpeakers.map(function(speaker){ return speaker&&speaker.name; });
+        ROSTER_ADDITIONS.forEach(function(addition){
+          if(addition.version<=savedRosterVersion) return;
+          if(rosterNames.indexOf(addition.name)!==-1) return;
+          var candidate=DEFAULT_SPEAKERS.filter(function(entry){ return entry.name===addition.name; })[0];
+          if(!candidate) return;
+          migratedSpeakers=migratedSpeakers.concat([Object.assign({},candidate)]);
+          speakersChanged=true;
+        });
+      }
       if(speakersChanged) next=Object.assign({},next,{speakers:migratedSpeakers});
     }
+    if((value.rosterVersion||0)<ROSTER_VERSION) next=Object.assign({},next,{rosterVersion:ROSTER_VERSION});
     return next;
   }
 
@@ -993,7 +1021,7 @@
   function load(){
     try{ var s = JSON.parse(localStorage.getItem(LS)); if(s&&s.videos&&s.speakers) return migrateState(s); }catch(e){}
     if(window.__EMOTIVE_BAKED__){ try{ return migrateState(JSON.parse(JSON.stringify(window.__EMOTIVE_BAKED__))); }catch(e){} }
-    return { text:{}, videos:Object.assign({},DEFAULT_VIDEOS), speakers:JSON.parse(JSON.stringify(DEFAULT_SPEAKERS)) };
+    return { text:{}, videos:Object.assign({},DEFAULT_VIDEOS), speakers:JSON.parse(JSON.stringify(DEFAULT_SPEAKERS)), rosterVersion:ROSTER_VERSION };
   }
   function save(){ try{ localStorage.setItem(LS, JSON.stringify(state)); }catch(e){} }
 

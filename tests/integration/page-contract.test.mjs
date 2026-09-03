@@ -18,6 +18,10 @@ const staticMarkup = html.replace(/<script(?:\s[^>]*)?>[\s\S]*?<\/script>/gi, ''
 const appScript = extractInlineScript(html)
 const seungPortrait = await readFile(new URL('../../assets/human/seung-yeul-ji.webp', import.meta.url))
 const hanjongPortrait = await readFile(new URL('../../assets/human/hanjong-jun.webp', import.meta.url))
+const koPortrait = await readFile(new URL('../../assets/human/kyung-ho-ko.webp', import.meta.url))
+const chungPortrait = await readFile(new URL('../../assets/human/yeon-shim-chung.webp', import.meta.url))
+const luoPortrait = await readFile(new URL('../../assets/human/luo-mi.webp', import.meta.url))
+const yunKyungPortrait = await readFile(new URL('../../assets/human/yun-kyung-lee.webp', import.meta.url))
 
 const EXPECTED_CONTENT_HASH = '3133b5dd87187ff6d201fcbf1cc6327493de41867f3e3e7abb3e9b94a21d6c14'
 const SECTION_MARKERS = Object.freeze([
@@ -64,7 +68,11 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
   const script = extractInlineScript(html)
   const defaultsSource = script.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const migrationSource = script.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const versionSource = script.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
+  const additionsSource = script.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const currentRosterVersion = Number(versionSource.match(/\d+/)?.[0])
   const input = {
+    rosterVersion: currentRosterVersion,
     text: {
       hero: 'An international symposium and book launch',
       plural: 'Prior symposia references',
@@ -84,6 +92,8 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
   new Script(`
     var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
     ${defaultsSource}
+    ${versionSource}
+    ${additionsSource}
     ${migrationSource}
     result=migrateState(input);
   `).runInNewContext(context)
@@ -118,7 +128,7 @@ test('preserves all 101 editable content bindings', () => {
 })
 
 test('preserves runtime content, media, registration, and editor storage contracts', () => {
-  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun']) {
+  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee']) {
     assert.ok(html.includes(speaker), `missing speaker: ${speaker}`)
   }
   assert.doesNotMatch(html, /Prof Mijeong Kim|Hoon Han|hoon-han/)
@@ -146,7 +156,11 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', photo: 'assets/human/seung-yeul-ji.webp', photoPosition: '50% 28%' },
     { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%' },
     { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%' },
-    { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%' }
+    { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%' },
+    { name: 'Prof Kyung Ho Ko', role: 'Discussant', aff: 'Hongik University · Department of Sculpture', photo: 'assets/human/kyung-ho-ko.webp', photoPosition: '50% 30%' },
+    { name: 'Prof Yeon Shim Chung', role: 'Discussant', aff: 'Hongik University · Department of Art History and Theory', photo: 'assets/human/yeon-shim-chung.webp', photoPosition: '50% 12%' },
+    { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%' },
+    { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%' }
   ])
 })
 
@@ -164,6 +178,68 @@ test('ships the approved metadata-free Hanjong Jun portrait', () => {
   assert.equal(hanjongPortrait.subarray(8, 12).toString(), 'WEBP')
 })
 
+test('ships the approved metadata-free Kyung Ho Ko portrait', () => {
+  const approvedPortraitHash = '5b0122bf064c889b95cb4d372a98809cc2806f6748f6bf5e3728ca5981d487d7'
+  assert.equal(sha256(koPortrait), approvedPortraitHash)
+  assert.equal(koPortrait.subarray(0, 4).toString(), 'RIFF')
+  assert.equal(koPortrait.subarray(8, 12).toString(), 'WEBP')
+  assert.ok(!koPortrait.includes(Buffer.from('EXIF')), 'portrait still carries EXIF metadata')
+  assert.ok(!koPortrait.includes(Buffer.from('XMP ')), 'portrait still carries XMP metadata')
+})
+
+test('ships the approved metadata-free Yeon Shim Chung portrait', () => {
+  const approvedPortraitHash = '0abc0a11d76b3425f50ce50945950c620c7187f8c6d4a085726147dfebe9d454'
+  assert.equal(sha256(chungPortrait), approvedPortraitHash)
+  assert.equal(chungPortrait.subarray(0, 4).toString(), 'RIFF')
+  assert.equal(chungPortrait.subarray(8, 12).toString(), 'WEBP')
+  assert.ok(!chungPortrait.includes(Buffer.from('EXIF')), 'portrait still carries EXIF metadata')
+  assert.ok(!chungPortrait.includes(Buffer.from('XMP ')), 'portrait still carries XMP metadata')
+  assert.ok(!chungPortrait.includes(Buffer.from('ICCP')), 'portrait still carries an ICC profile')
+})
+
+test('ships the approved metadata-free AI Manufacturing Lab portraits', () => {
+  for (const [label, portrait, approvedPortraitHash] of [
+    ['Luo Mi', luoPortrait, 'ed48103d6c4c6b51d8ab5fc18cffe41fad12a99e3d122bdc064f52b7555de124'],
+    ['Yun Kyung Lee', yunKyungPortrait, '0b1a1cfebb9264025fe87cd6d0a48b39de1a28c30d0847544dd7832bde05f10f']
+  ]) {
+    assert.equal(sha256(portrait), approvedPortraitHash, `${label}: unexpected portrait bytes`)
+    assert.equal(portrait.subarray(0, 4).toString(), 'RIFF', `${label}: not a RIFF container`)
+    assert.equal(portrait.subarray(8, 12).toString(), 'WEBP', `${label}: not a WebP image`)
+    assert.ok(!portrait.includes(Buffer.from('EXIF')), `${label}: portrait still carries EXIF metadata`)
+    assert.ok(!portrait.includes(Buffer.from('XMP ')), `${label}: portrait still carries XMP metadata`)
+    assert.ok(!portrait.includes(Buffer.from('ICCP')), `${label}: portrait still carries an ICC profile`)
+  }
+})
+
+test('fits the whole roster in the desktop carousel without clipping cards', () => {
+  // 데스크톱 트랙은 스크롤이 없으므로(overflow:hidden, 스크롤 로직은 max-width:800px 전용)
+  // 카드 폭 합계가 트랙을 넘으면 그대로 잘려 보이지 않습니다.
+  const desktopCard = systemCss.match(/\.spk\{[^}]*isolation:isolate[^}]*\}/s)?.[0] ?? ''
+  const activeCard = systemCss.match(/\.spk\.is-active\{[^}]*flex[^}]*\}/s)?.[0] ?? ''
+  const desktopTrack = systemCss.match(/\.spk-grid\{[^}]*flex-wrap:nowrap[^}]*\}/s)?.[0] ?? ''
+
+  assert.match(desktopTrack, /overflow:hidden/)
+  assert.match(desktopTrack, /gap:12px/)
+  assert.match(desktopCard, /flex:0 1 clamp\(90px,8vw,130px\)/, 'inactive cards must be allowed to shrink')
+  assert.match(desktopCard, /min-width:0/, 'flex items need min-width:0 to shrink below their content')
+  assert.match(activeCard, /flex:0 0 52%/, 'the expanded card must keep its full width')
+
+  // 펼친 카드가 52%와 gap을 가져가고, 남은 48%를 비활성 카드가 균등하게 나눕니다.
+  const declaration = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const context = {}
+  new Script(`${declaration};result=DEFAULT_SPEAKERS.length;`).runInNewContext(context)
+  const count = context.result
+  const inactiveWidth = (track) => (track * 0.48) / (count - 1) - 12
+
+  // 1280px과 1440px 뷰포트에서 실측한 트랙 폭
+  for (const [viewport, track] of [[1280, 877], [1440, 987]]) {
+    assert.ok(
+      inactiveWidth(track) >= 40,
+      `a roster of ${count} squeezes inactive cards to ${inactiveWidth(track).toFixed(1)}px at ${viewport}px — rework the carousel before adding more`
+    )
+  }
+})
+
 test('implements an accessible expanding speaker accordion carousel', () => {
   const cssWithoutSpeakerOverlay = systemCss.replace(/\.spk\.is-active::after\s*\{[^}]*\}/s, '')
   const speakerInfoRule = systemCss.match(/\.spk \.info\s*\{([^}]*)\}/s)?.[1] ?? ''
@@ -171,8 +247,8 @@ test('implements an accessible expanding speaker accordion carousel', () => {
   assert.doesNotMatch(cssWithoutSpeakerOverlay, /linear-gradient|radial-gradient/i)
   assert.match(systemCss, /\.spk\.is-active::after\s*\{[^}]*linear-gradient\(/s)
   assert.match(systemCss, /\.spk-grid\s*\{[^}]*display:flex[^}]*flex-wrap:nowrap[^}]*gap:/s)
-  assert.match(systemCss, /\.spk\s*\{[^}]*flex:0 0 clamp\(90px,[^,]+,130px\)[^}]*height:clamp\([^}]*border-radius:[^}]*transition:flex-basis \.65s cubic-bezier/s)
-  assert.match(systemCss, /\.spk\.is-active\s*\{[^}]*flex-basis:52%/s)
+  assert.match(systemCss, /\.spk\s*\{[^}]*flex:0 1 clamp\(90px,[^,]+,130px\)[^}]*min-width:0[^}]*height:clamp\([^}]*border-radius:[^}]*transition:flex-basis \.65s cubic-bezier/s)
+  assert.match(systemCss, /\.spk\.is-active\s*\{[^}]*flex:0 0 52%/s)
   assert.match(systemCss, /\.spk \.face img\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
   assert.match(systemCss, /\.spk\.is-active \.info\s*\{[^}]*opacity:1[^}]*visibility:visible/s)
   assert.match(systemCss, /@media\s*\(min-width:641px\)\s*and\s*\(max-width:800px\)[\s\S]*?\.spk-grid\s*\{[^}]*overflow-x:auto[^}]*scroll-snap-type:x proximity/s)
@@ -216,6 +292,8 @@ test('implements an accessible expanding speaker accordion carousel', () => {
 test('immutably migrates the legacy speaker roster while preserving custom participants', () => {
   const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
+  const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const input = {
     text: {},
     videos: { clip0: 'custom-hero.mp4' },
@@ -233,12 +311,14 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
   new Script(`
     var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
     ${defaults}
+    ${version}
+    ${additions}
     ${migration}
     result=migrateState(input);
   `).runInNewContext(context)
 
   assert.deepEqual(Array.from(context.result.speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Custom Participant'
+    'Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Custom Participant', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee'
   ])
   assert.equal(context.result.speakers[0].photo, 'assets/human/seung-yeul-ji.webp')
   assert.equal(context.result.speakers[1].photo, 'custom-ju.jpg')
@@ -249,6 +329,78 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
   assert.deepEqual(input, original)
 })
 
+test('adds each newly confirmed speaker to a saved roster once, per roster version', () => {
+  const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
+  const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const currentRosterVersion = Number(version.match(/\d+/)?.[0])
+  const preamble = `
+    var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+    ${defaults}
+    ${version}
+    ${additions}
+    ${migration}
+  `
+  const migrate = (input) => {
+    const context = { input }
+    new Script(`${preamble}result=migrateState(input);`).runInNewContext(context)
+    return context.result
+  }
+  const savedRoster = (extra = {}) => Object.assign({
+    text: {},
+    videos: {},
+    speakers: [
+      { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', color: '#171717', photo: 'assets/human/seung-yeul-ji.webp', photoPosition: '50% 28%' },
+      { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', color: '#d52b1e', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%' }
+    ]
+  }, extra)
+
+  // 아직 한 번도 이주하지 않은 저장본은 확정된 신규 연사를 모두 이어받습니다
+  const stale = savedRoster()
+  const staleOriginal = JSON.parse(JSON.stringify(stale))
+  const migrated = migrate(stale)
+
+  assert.deepEqual(Array.from(migrated.speakers, (speaker) => speaker.name), [
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee'
+  ])
+  assert.equal(migrated.speakers[2].photo, 'assets/human/kyung-ho-ko.webp')
+  assert.equal(migrated.speakers[2].aff, 'Hongik University · Department of Sculpture')
+  assert.equal(migrated.speakers[3].photo, 'assets/human/yeon-shim-chung.webp')
+  assert.equal(migrated.speakers[3].aff, 'Hongik University · Department of Art History and Theory')
+  assert.equal(migrated.speakers[4].photo, 'assets/human/luo-mi.webp')
+  assert.equal(migrated.speakers[4].aff, 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab')
+  assert.equal(migrated.speakers[5].photo, 'assets/human/yun-kyung-lee.webp')
+  assert.equal(migrated.speakers[5].aff, 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab')
+  assert.equal(migrated.rosterVersion, currentRosterVersion)
+  assert.deepEqual(stale, staleOriginal)
+
+  // 같은 상태를 다시 이주해도 명단이 늘어나지 않습니다
+  const reapplied = migrate(JSON.parse(JSON.stringify(migrated)))
+  assert.deepEqual(
+    Array.from(reapplied.speakers, (speaker) => speaker.name),
+    Array.from(migrated.speakers, (speaker) => speaker.name),
+    'migration must be idempotent'
+  )
+
+  // 이미 본 판에서 직접 지운 연사는 다음 판 이주에서도 되살아나지 않습니다
+  const removedEarlier = Object.assign({}, migrated, {
+    rosterVersion: currentRosterVersion - 1,
+    speakers: migrated.speakers.filter((speaker) => speaker.name === 'Dr Seung Yeul Ji' || speaker.name === 'Prof Hanjong Jun')
+  })
+  assert.deepEqual(Array.from(migrate(removedEarlier).speakers, (speaker) => speaker.name), [
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Luo Mi', 'Prof Yun Kyung Lee'
+  ])
+
+  // 최신 판에서 지운 연사도 되살아나지 않습니다
+  const removedAtCurrent = Object.assign({}, migrated, {
+    speakers: migrated.speakers.filter((speaker) => speaker.name !== 'Prof Yun Kyung Lee')
+  })
+  assert.deepEqual(Array.from(migrate(removedAtCurrent).speakers, (speaker) => speaker.name), [
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi'
+  ])
+})
+
 test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {
   const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
@@ -257,12 +409,16 @@ test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {
     videos: {},
     speakers: [{ name: 'Prof Mijeong Kim', role: 'Discussant', aff: 'Hanyang University', photo: '' }]
   }
+  const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
+  const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const original = JSON.parse(JSON.stringify(input))
   const context = { input }
 
   new Script(`
     var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
     ${defaults}
+    ${version}
+    ${additions}
     ${migration}
     result=migrateState(input);
   `).runInNewContext(context)

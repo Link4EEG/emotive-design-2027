@@ -903,20 +903,22 @@
     {name:"Prof Luo Mi", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab", color:"#171717", photo:"assets/human/luo-mi.webp", photoPosition:"50% 0%"},
     {name:"Prof Yun Kyung Lee", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab", color:"#d52b1e", photo:"assets/human/yun-kyung-lee.webp", photoPosition:"50% 10%"},
     {name:"Prof Jin Woo Lee", role:"Discussant", aff:"Yonsei University · Department of Urban Planning and Engineering", color:"#171717", photo:"assets/human/jin-woo-lee.webp", photoPosition:"50% 40%"},
-    {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#d52b1e", photo:"assets/human/daeil-song.webp", photoPosition:"71% 50%"}
+    {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Andong National University · Department of K-Culture Contents", color:"#d52b1e", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%"},
+    {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#171717", photo:"assets/human/daeil-song.webp", photoPosition:"71% 50%"}
   ];
 
   /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.
      저장된 명단은 자기 판보다 나중에 확정된 연사만 한 번 이어받으므로,
      이미 본 뒤 직접 지운 연사는 다음 판에서도 되살아나지 않습니다. */
-  var ROSTER_VERSION = 6;
+  var ROSTER_VERSION = 7;
   var ROSTER_ADDITIONS = [
     {version:2, name:"Prof Kyung Ho Ko"},
     {version:3, name:"Prof Yeon Shim Chung"},
     {version:4, name:"Prof Luo Mi"},
     {version:4, name:"Prof Yun Kyung Lee"},
     {version:5, name:"Daeil Song"},
-    {version:6, name:"Prof Jin Woo Lee"}
+    {version:6, name:"Prof Jin Woo Lee"},
+    {version:7, name:"Prof Eon Yong Kim"}
   ];
 
   function migrateState(value){

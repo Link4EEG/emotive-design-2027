@@ -11,7 +11,7 @@ Swiss/Vignelli 편집 시스템: 흰 배경의 초대형 **EMOTIVE / DESIGN** �
 Click **✎ Edit page** (bottom-right). / 우측 하단 **✎ Edit page** 클릭.
 
 - **Text** — 점선 표시된 모든 텍스트(타이틀, 날짜, 세션 설명 등) 클릭 후 바로 수정.
-- **Speakers** — 검은 배경의 4열 흑백 초상 그리드(Vercel Ship 2025 speakers 페이지 스타일). 카드 위에 마우스를 올리면 역할 칩(KEYNOTE/DISCUSSANT)이 나타납니다. 편집 모드에서 그리드 끝의 **+ Add speaker**로 추가하고 카드 오른쪽 위 빨간 **×**로 삭제합니다. 확정: Seung Yeul Ji, Ju Hyun Lee, Michael Ostwald, Hanjong Jun, Kyung Ho Ko, Yeon Shim Chung, Luo Mi, Yun Kyung Lee, Jin Woo Lee, Daeil Song.
+- **Speakers** — 검은 배경의 4열 흑백 초상 그리드(Vercel Ship 2025 speakers 페이지 스타일). 카드 위에 마우스를 올리면 역할 칩(KEYNOTE/DISCUSSANT)이 나타납니다. 편집 모드에서 그리드 끝의 **+ Add speaker**로 추가하고 카드 오른쪽 위 빨간 **×**로 삭제합니다. 확정: Seung Yeul Ji, Ju Hyun Lee, Michael Ostwald, Hanjong Jun, Kyung Ho Ko, Yeon Shim Chung, Luo Mi, Yun Kyung Lee, Jin Woo Lee, Eon Yong Kim, Daeil Song.
 - **Hero video** — 편집 모드에서 우측 상단 **✎ Clip 1** 버튼으로 히어로 클립 교체 (파일 선택 또는 경로/URL 입력). Clipchamp/CapCut 편집기 바로가기 포함.
 - **Featured film** — Monster Space 트레일러. 영상 위 **Change / edit film** 버튼으로 교체.
 - **✓ Done** — 저장 (이 브라우저에 자동 저장).
@@ -40,5 +40,6 @@ Emotive_Design_2027_Website/
       luo-mi.webp                 speaker portrait (web-optimized)
       yun-kyung-lee.webp          speaker portrait (web-optimized)
       jin-woo-lee.webp            speaker portrait (web-optimized)
+      eon-yong-kim.webp           speaker portrait (web-optimized)
       daeil-song.webp             speaker portrait (web-optimized)
 ```

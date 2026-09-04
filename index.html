@@ -341,40 +341,32 @@
   body:not(.editing) .film-side [data-filmedit]{display:none}
 
   .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-  .roster{grid-column:4/13;grid-row:3;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr);column-gap:var(--gutter);align-items:start;min-width:0}
-  .roster-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--ink)}
-  .roster-row{position:relative;border-bottom:1px solid var(--line)}
-  .roster-row::before{content:"";position:absolute;top:-1px;left:0;width:0;height:1px;background:var(--accent);transition:width .5s cubic-bezier(.2,.7,.2,1)}
-  .roster-row.is-active::before{width:100%}
-  .roster-item{display:grid;grid-template-columns:2.6em minmax(0,1fr) auto;align-items:baseline;column-gap:14px;width:100%;min-height:64px;padding:17px 0 15px;border:0;background:transparent;color:var(--ink);text-align:left;cursor:pointer}
-  .roster-item:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
-  .roster-index{color:var(--muted);font:600 11px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.1em;font-variant-numeric:tabular-nums;transition:color .2s}
-  .roster-title{display:block;font-size:clamp(22px,2.2vw,34px);font-weight:500;line-height:1.02;letter-spacing:-.045em;transition:color .2s,transform .5s cubic-bezier(.2,.7,.2,1)}
-  .roster-tag{color:var(--muted);font:700 9px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;transition:color .2s}
-  .roster-row.is-active .roster-index{color:var(--accent)}
-  .roster-row.is-active .roster-title{color:var(--accent);transform:translateX(10px)}
-  .roster-row.is-active .roster-tag{color:var(--ink)}
-  .roster-stage{position:sticky;top:calc(var(--nav-h) + 28px);min-width:0}
-  .roster-frame{position:relative;isolation:isolate;aspect-ratio:3/4;border:1px solid var(--ink);background:var(--ink);overflow:hidden}
-  .roster-frame img,.roster-frame .roster-face{position:absolute;inset:0;width:100%;height:100%;opacity:0;transform:scale(1.04);transition:opacity .45s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1)}
-  .roster-frame img{object-fit:cover;object-position:var(--speaker-position,50% 50%);filter:grayscale(1) contrast(1.04)}
-  .roster-frame .roster-face{display:flex;align-items:center;justify-content:center;color:var(--white);font:600 clamp(48px,6vw,96px) 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.06em}
-  .roster-frame img.is-active,.roster-frame .roster-face.is-active{z-index:1;opacity:1;transform:none}
-  .roster-frame::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(135deg,rgb(213 43 30 / .2) 0%,rgb(23 23 23 / 0) 48%,rgb(23 23 23 / .36) 100%);pointer-events:none}
-  .roster-caption{display:grid;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--ink)}
-  .roster-role{color:var(--accent);font:700 10px 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
-  .roster-name{font-size:clamp(20px,1.8vw,26px);font-weight:600;line-height:1.05;letter-spacing:-.035em}
-  .roster-aff{color:var(--muted);font-size:13px;line-height:1.45}
-  .roster-row .rm{display:none}
-  .roster-add-row{display:none}
-  .roster-add{display:none;width:100%;min-height:64px;padding:16px 0;border:0;background:transparent;color:var(--ink);font:600 14px 'Helvetica Neue',Helvetica,Arial,sans-serif;text-align:left;align-items:center;gap:12px;cursor:pointer;transition:color .2s}
-  .roster-add span{font-size:24px;line-height:1}
-  .roster-add:hover,.roster-add:focus-visible{color:var(--accent)}
-  body.editing .roster-add-row{display:block}
-  body.editing .roster-add{display:flex}
-  body.editing .roster-item{padding-right:52px}
-  body.editing .roster-row .rm{display:flex;position:absolute;top:50%;right:0;z-index:2;width:34px;height:34px;margin-top:-17px;align-items:center;justify-content:center;border:1px solid var(--white);background:var(--accent);color:var(--white);font-size:16px;line-height:1;cursor:pointer}
-  .spk-note{grid-column:4/10;margin:26px 0 0;color:var(--muted);font-size:13px}
+  /* Speakers: Vercel Ship 2025 speakers 페이지를 이 섹션에만 옮긴 다크 프레임 그리드 */
+  .band-dark{--mono:ui-monospace,"SF Mono",Menlo,Monaco,"Cascadia Mono","Roboto Mono","DejaVu Sans Mono",monospace;background:#000;border-top:0;color:#ededed}
+  #people{position:relative;display:block;max-width:1212px;margin:0 auto;padding:80px;border-inline:1px solid rgb(255 255 255 / .14)}
+  #people .kicker{position:static;display:block;margin:0 0 28px;color:#a3a3a3;font:400 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+  #people .display{margin:0 0 16px;max-width:none;color:#ededed;font-size:clamp(32px,4.5vw,64px);font-weight:600;line-height:1;letter-spacing:-.06em}
+  #people .lead{margin:0 0 40px;max-width:576px;color:#a3a3a3;font:400 16px/24px var(--mono);letter-spacing:0}
+  .spk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px 32px;margin:0;padding:0;list-style:none}
+  .spk{position:relative;display:flex;flex-direction:column;gap:16px;padding:4px;min-width:0}
+  .spk-face{position:relative;aspect-ratio:231/269;overflow:hidden;background:#000}
+  .spk-face img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--speaker-position,50% 50%);filter:grayscale(1) contrast(1.05)}
+  .spk-face .spk-initials{display:flex;width:100%;height:100%;align-items:center;justify-content:center;color:#ededed;font:600 clamp(40px,4vw,64px) 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em}
+  .spk-face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgb(0 0 0 / 0) 58%,#000 100%);pointer-events:none}
+  .spk-chip{position:absolute;left:8px;bottom:8px;z-index:1;padding:6px 8px;border:1px solid rgb(255 255 255 / .18);background:rgb(0 0 0 / .72);color:#ededed;font:400 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;opacity:0;transition:opacity .2s}
+  .spk:hover .spk-chip,.spk:focus-within .spk-chip{opacity:1}
+  .spk-text{display:grid;gap:0}
+  .spk-name{margin:0;color:#ededed;font:400 20px/30px var(--mono);letter-spacing:0;text-transform:uppercase;overflow-wrap:anywhere}
+  .spk-aff{margin:0;color:#878787;font:400 16px/24px var(--mono);letter-spacing:0;text-transform:uppercase}
+  .spk-note{margin:40px 0 0;color:#878787;font:400 13px/1.5 var(--mono)}
+  .spk .rm{display:none}
+  body.editing .spk .rm{display:flex;position:absolute;top:12px;right:12px;z-index:2;width:34px;height:34px;align-items:center;justify-content:center;border:1px solid #ededed;background:var(--accent);color:#fff;font-size:16px;line-height:1;cursor:pointer}
+  .spk-add-item{display:none}
+  body.editing .spk-add-item{display:block}
+  .spk-add{display:none;width:100%;min-height:0;aspect-ratio:231/269;align-items:center;justify-content:center;flex-direction:column;gap:10px;border:1px dashed rgb(255 255 255 / .35);background:transparent;color:#ededed;font:400 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:border-color .2s}
+  .spk-add span{font-size:28px;line-height:1}
+  .spk-add:hover,.spk-add:focus-visible{border-color:#ededed}
+  body.editing .spk-add{display:flex}
 
   .book-in{padding-block:clamp(104px,11vw,176px);align-items:center}
   .book-cover{grid-column:2/5;aspect-ratio:3/4.3;padding:28px 24px;border:0;border-left:12px solid var(--accent);background:var(--ink);color:var(--white);box-shadow:none}
@@ -452,11 +444,10 @@
     .hero-inner{min-height:calc(100dvh - var(--nav-h));grid-template-columns:var(--grid)}
     .hero-type{grid-column:1/5}
     .hero-info,.hero-sub,.hero-ctas{grid-column:1/4}
-    .value-grid,.stream-grid,#program>div:last-child,.film-card,.roster,.spk-note,.join-grid{grid-column:2/7}
-    .roster{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-    .roster-item{grid-template-columns:2.4em minmax(0,1fr);row-gap:4px}
-    .roster-tag{grid-column:2}
-    .roster-title{font-size:clamp(20px,3vw,28px)}
+    .value-grid,.stream-grid,#program>div:last-child,.film-card,.join-grid{grid-column:2/7}
+    #people{padding:56px 24px;border-inline:0}
+    .spk-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .spk-chip{opacity:1}
     .film-card{grid-template-columns:1fr}
     .film-card video{min-height:0;aspect-ratio:16/9}
     .film-side{border-top:1px solid var(--ink);border-left:0}
@@ -471,7 +462,7 @@
   @media (max-width:640px){
     :root{--grid:repeat(4,minmax(0,1fr));--edge:20px;--gutter:14px;--nav-h:108px}
     section,section.wrap{padding-block:84px}
-    .kicker,.display,.lead,.value-grid,.stream-grid,#program>div:last-child,.film-card,.roster,.spk-note,.join-grid{grid-column:1/5}
+    .kicker,.display,.lead,.value-grid,.stream-grid,#program>div:last-child,.film-card,.join-grid{grid-column:1/5}
     .kicker{position:static;grid-row:auto;margin:0 0 24px}
     .display{grid-row:auto;margin-bottom:24px;font-size:clamp(40px,13vw,60px)}
     .lead{grid-row:auto;margin-bottom:48px;font-size:17px}
@@ -498,13 +489,11 @@
     .talk .time{grid-column:1/2}
     .talk .meta{grid-column:2/5}
     .talk>div:last-child{grid-column:1/5;margin-top:12px}
-    .roster{display:flex;flex-direction:column;align-items:stretch;grid-row:auto}
-    .roster-stage{order:-1;position:sticky;top:var(--nav-h);z-index:3;margin:0 0 24px;padding:8px 0 14px;background:var(--paper)}
-    .roster-frame{aspect-ratio:auto;height:min(44vh,340px)}
-    .roster-caption{margin-top:12px;padding-top:12px}
-    .roster-item{min-height:56px;padding:13px 0 12px}
-    .roster-title{font-size:clamp(22px,6.4vw,30px)}
-    .roster-row.is-active .roster-title{transform:translateX(6px)}
+    #people{padding:40px 16px}
+    #people .lead{margin-bottom:32px}
+    .spk{gap:12px}
+    .spk-name{font-size:14px;line-height:20px}
+    .spk-aff{font-size:12px;line-height:18px}
     .book-in{padding-block:84px}
     .book-cover{grid-column:1/4;max-width:320px;margin-bottom:52px}
     .book-txt{grid-column:1/5}
@@ -534,7 +523,7 @@
     *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
     .reveal,.talk,.stream,.value,.join-card{opacity:1!important;transform:none!important;animation:none!important}
     .hero-media video{transition:none}
-    .roster-frame img,.roster-frame .roster-face,.roster-title,.roster-row::before{transition:none!important;transform:none!important}
+    .spk-chip,.spk-add{transition:none!important}
     .scroll-progress{display:none}
   }
 </style>
@@ -726,23 +715,12 @@
 </section>
 
 <!-- ============ PEOPLE ============ -->
-<div class="band">
+<div class="band band-dark">
 <section id="people" class="wrap reveal">
   <div class="kicker">Speakers</div>
   <h2 class="display" data-edit="ppl.title">Meet our speakers</h2>
   <p class="lead" data-edit="ppl.lead">The keynotes and thematic sessions are led by the book's two co-authors, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.</p>
-  <div class="roster">
-    <ul class="roster-list" id="speakers" role="tablist" aria-orientation="vertical" aria-label="Speaker profiles"></ul>
-    <div class="roster-stage" id="rosterStage" role="tabpanel" tabindex="0">
-      <div class="roster-frame" id="rosterFrame"></div>
-      <div class="roster-caption">
-        <span class="roster-role" id="rosterRole"></span>
-        <span class="roster-name" id="rosterName"></span>
-        <span class="roster-aff" id="rosterAff"></span>
-      </div>
-    </div>
-    <p class="sr-only" id="spkStatus" aria-live="polite"></p>
-  </div>
+  <ul class="spk-grid" id="speakers" role="list" aria-label="Speaker profiles"></ul>
   <p class="spk-note" data-edit="ppl.note">More discussants to be announced. Candidates are invited subject to confirmation.</p>
 </section>
 </div>
@@ -1081,145 +1059,40 @@
   function esc(t){ return (t==null?"":String(t)).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function speakerColor(value){ return value==="#d52b1e" ? "#d52b1e" : "#171717"; }
   function speakerPosition(value){ return /^\d{1,3}(?:\.\d+)?% \d{1,3}(?:\.\d+)?%$/.test(value||"") ? value : "50% 50%"; }
-  function defaultSpeakerIndex(count){ return count ? 0 : -1; }
-  var activeSpeakerIndex=-1;
-
-  function setActiveSpeaker(index, options){
-    options=options||{};
-    var list=$("#speakers"),frame=$("#rosterFrame"),stage=$("#rosterStage"),status=$("#spkStatus");
-    var rows=$$(".roster-row[data-spk]",list);
-    var faces=$$("[data-face]",frame);
-    var role=$("#rosterRole"),name=$("#rosterName"),aff=$("#rosterAff");
-    var count=rows.length;
-    if(!count){
-      activeSpeakerIndex=-1;
-      if(stage) stage.removeAttribute("aria-labelledby");
-      if(role) role.textContent="";
-      if(name) name.textContent="";
-      if(aff) aff.textContent="";
-      if(status) status.textContent="No speakers available";
-      return;
-    }
-    var normalized=((index%count)+count)%count;
-    activeSpeakerIndex=normalized;
-    rows.forEach(function(row,i){
-      var active=i===normalized;
-      var tab=$(".roster-item",row);
-      row.classList.toggle("is-active",active);
-      if(tab){
-        tab.setAttribute("aria-selected",active ? "true" : "false");
-        tab.tabIndex=active ? 0 : -1;
-      }
-    });
-    faces.forEach(function(face,i){
-      var active=i===normalized;
-      face.classList.toggle("is-active",active);
-      face.setAttribute("aria-hidden",active ? "false" : "true");
-    });
-    var speaker=state.speakers[normalized];
-    if(role) role.textContent=speaker.role||"";
-    if(name) name.textContent=speaker.name||"";
-    if(aff) aff.textContent=speaker.aff||"";
-    if(stage) stage.setAttribute("aria-labelledby","spk-tab-"+normalized);
-    if(status) status.textContent="Speaker "+(normalized+1)+" of "+count+": "+speaker.name;
-    if(options.focus){
-      var activeTab=$(".roster-item",rows[normalized]);
-      if(activeTab) activeTab.focus();
-    }
-  }
-
-  function stepSpeaker(delta, options){
-    if(!state.speakers.length) return;
-    setActiveSpeaker(activeSpeakerIndex+delta,options||{focus:true});
-  }
-
   function renderSpeakers(){
-    var list=$("#speakers"),frame=$("#rosterFrame");
-    list.innerHTML=""; frame.innerHTML="";
+    var grid=$("#speakers"); grid.innerHTML="";
     state.speakers.forEach(function(s, i){
-      var row=document.createElement("li");
-      row.className="roster-row";
-      row.setAttribute("role","presentation");
-      row.setAttribute("data-spk",i);
-      row.innerHTML='<button type="button" class="roster-item" id="spk-tab-'+i+'" role="tab" data-spk="'+i+'" aria-selected="false" aria-controls="rosterStage" tabindex="-1">'+
-        '<span class="roster-index" aria-hidden="true">'+(i<9?"0":"")+(i+1)+'</span>'+
-        '<span class="roster-title">'+esc(s.name)+'</span>'+
-        '<span class="roster-tag">'+esc(s.role)+'</span></button>'+
+      var card=document.createElement("li");
+      card.className="spk";
+      card.style.setProperty("--speaker-position",speakerPosition(s.photoPosition));
+      var face = s.photo
+        ? '<img src="'+esc(s.photo)+'" alt="'+esc(s.name)+'" loading="lazy" decoding="async">'
+        : '<div class="spk-initials" style="background:'+speakerColor(s.color)+'">'+esc(initials(s.name))+'</div>';
+      card.innerHTML='<div class="spk-face">'+face+'<span class="spk-chip">'+esc(s.role)+'</span></div>'+
+        '<div class="spk-text"><p class="spk-name">'+esc(s.name)+'</p><p class="spk-aff">'+esc(s.aff)+'</p></div>'+
         '<button type="button" class="rm" title="Remove" aria-label="Remove '+esc(s.name)+'" data-rm="'+i+'">×</button>';
-      list.appendChild(row);
-      /* 초상은 무대에 전부 겹쳐 두고 활성 한 장만 보이게 합니다 → hover 때 로딩 지연이 없습니다 */
-      var face;
-      if(s.photo){
-        face=document.createElement("img");
-        face.src=s.photo; face.alt=s.name; face.loading="lazy"; face.decoding="async";
-        face.style.setProperty("--speaker-position",speakerPosition(s.photoPosition));
-      }else{
-        face=document.createElement("div");
-        face.className="roster-face";
-        face.style.background=speakerColor(s.color);
-        face.textContent=initials(s.name);
-      }
-      face.setAttribute("data-face",i);
-      face.setAttribute("aria-hidden","true");
-      frame.appendChild(face);
+      grid.appendChild(card);
     });
-    var addRow=document.createElement("li");
-    addRow.className="roster-row roster-add-row";
-    addRow.setAttribute("role","presentation");
+    var addItem=document.createElement("li");
+    addItem.className="spk-add-item";
     var add=document.createElement("button");
     add.type="button";
-    add.className="roster-add"; add.id="spkAddCard";
+    add.className="spk-add"; add.id="spkAddCard";
     add.innerHTML='<span aria-hidden="true">+</span>Add speaker';
-    addRow.appendChild(add);
-    list.appendChild(addRow);
+    addItem.appendChild(add);
+    grid.appendChild(addItem);
     add.addEventListener("click", openAddSpeaker);
-    $$("[data-rm]", list).forEach(function(b){
+    $$("[data-rm]", grid).forEach(function(b){
       b.addEventListener("click", function(e){
         e.stopPropagation();
         var idx = +b.getAttribute("data-rm");
         if(confirm("Remove "+state.speakers[idx].name+"?")){
-          var speakers=state.speakers.filter(function(_,i){ return i!==idx; });
-          if(!speakers.length) activeSpeakerIndex=-1;
-          else if(idx<activeSpeakerIndex) activeSpeakerIndex-=1;
-          else if(idx===activeSpeakerIndex) activeSpeakerIndex=Math.min(idx,speakers.length-1);
-          state = Object.assign({}, state, {speakers:speakers});
+          state = Object.assign({}, state, {speakers:state.speakers.filter(function(_,i){ return i!==idx; })});
           save(); renderSpeakers();
         }
       });
     });
-    if(activeSpeakerIndex<0||activeSpeakerIndex>=state.speakers.length){
-      activeSpeakerIndex=defaultSpeakerIndex(state.speakers.length);
-    }
-    setActiveSpeaker(activeSpeakerIndex,{});
   }
-
-  var speakerList=$("#speakers");
-  function speakerIndexAt(target){
-    var item=target&&target.closest ? target.closest(".roster-item[data-spk]") : null;
-    return item ? +item.getAttribute("data-spk") : -1;
-  }
-  speakerList.addEventListener("click",function(e){
-    var i=speakerIndexAt(e.target);
-    if(i>=0) setActiveSpeaker(i,{});
-  });
-  /* 마우스로 이름 위를 지나가기만 해도 초상이 바뀝니다. 터치·펜은 hover가 없으니 탭(click)으로만 바꿉니다. */
-  speakerList.addEventListener("pointerover",function(e){
-    if(e.pointerType!=="mouse") return;
-    var i=speakerIndexAt(e.target);
-    if(i>=0&&i!==activeSpeakerIndex) setActiveSpeaker(i,{});
-  });
-  speakerList.addEventListener("focusin",function(e){
-    var i=speakerIndexAt(e.target);
-    if(i>=0&&i!==activeSpeakerIndex) setActiveSpeaker(i,{});
-  });
-  speakerList.addEventListener("keydown",function(e){
-    if(e.target.closest&&e.target.closest("[data-rm],.roster-add")) return;
-    if(e.key==="ArrowUp"||e.key==="ArrowDown"||e.key==="ArrowLeft"||e.key==="ArrowRight"||e.key==="Home"||e.key==="End") e.preventDefault();
-    if(e.key==="ArrowUp"||e.key==="ArrowLeft") stepSpeaker(-1,{focus:true});
-    else if(e.key==="ArrowDown"||e.key==="ArrowRight") stepSpeaker(1,{focus:true});
-    else if(e.key==="Home") setActiveSpeaker(0,{focus:true});
-    else if(e.key==="End") setActiveSpeaker(state.speakers.length-1,{focus:true});
-  });
 
   /* ---- edit mode ---- */
   var editing = false;
@@ -1349,7 +1222,6 @@
   $("#spkSave").addEventListener("click", function(){
     var name=$("#spkName").value.trim(); if(!name){ $("#spkName").focus(); return; }
     var speaker = { name:name, role:$("#spkRole").value.trim()||"Discussant", aff:$("#spkAff").value.trim()||"", photo:$("#spkPhotoPath").value.trim(), photoPosition:"50% 50%", color:PALETTE[state.speakers.length%PALETTE.length] };
-    activeSpeakerIndex=state.speakers.length;
     state = Object.assign({}, state, {speakers:state.speakers.concat([speaker])});
     save(); renderSpeakers(); spkDlg.close();
   });

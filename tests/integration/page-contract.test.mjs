@@ -223,64 +223,54 @@ test('ships the approved metadata-free Daeil Song portrait', () => {
   assert.ok(!songPortrait.includes(Buffer.from('ICCP')), 'portrait still carries an ICC profile')
 })
 
-test('implements an accessible hover-swap roster with a sticky portrait stage', () => {
-  // 마크업 — 이름 목록은 세로 tablist, 초상 무대는 tabpanel, 읽어주기용 live region은 유지
-  assert.match(html, /<ul class="roster-list" id="speakers" role="tablist" aria-orientation="vertical"/)
-  assert.match(html, /<div class="roster-stage" id="rosterStage" role="tabpanel"/)
-  assert.match(html, /<div class="roster-frame" id="rosterFrame">/)
-  assert.match(html, /id="spkStatus" aria-live="polite"/)
-  assert.doesNotMatch(html, /aria-roledescription="carousel"|id="spkPrev"|id="spkNext"|class="spk-grid"|class="spk-carousel"/)
+test('reproduces the Vercel Ship speaker grid: dark framed section, mono captions, four-up portraits', () => {
+  // 마크업 — 검은 띠 안의 프레임 섹션, 연사는 4열 그리드 목록
+  assert.match(html, /<div class="band band-dark">\s*<section id="people" class="wrap reveal">/)
+  assert.match(html, /<ul class="spk-grid" id="speakers" role="list" aria-label="Speaker profiles"><\/ul>/)
+  assert.doesNotMatch(html, /role="tablist"|class="roster|aria-roledescription="carousel"|id="spkPrev"|id="spkStatus"/)
 
-  // 데스크톱 — 왼쪽 이름 5 : 오른쪽 초상 4, 초상은 스크롤해도 화면에 고정
-  assert.match(systemCss, /\.roster\s*\{[^}]*grid-column:4\/13[^}]*grid-template-columns:minmax\(0,5fr\) minmax\(0,4fr\)/s)
-  assert.match(systemCss, /\.roster-stage\s*\{[^}]*position:sticky[^}]*top:calc\(var\(--nav-h\) \+ 28px\)/s)
-  assert.match(systemCss, /\.roster-frame\s*\{[^}]*aspect-ratio:3\/4[^}]*overflow:hidden/s)
-  assert.match(systemCss, /\.roster-frame img\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
-  assert.match(systemCss, /\.roster-frame img\.is-active[^{]*\{[^}]*opacity:1/s)
-  assert.match(systemCss, /\.roster-row\.is-active \.roster-title\s*\{[^}]*color:var\(--accent\)/s)
-  assert.match(systemCss, /\.roster-tag\s*\{[^}]*text-transform:uppercase/s)
+  // 섹션 — 검은 배경, 1212px 프레임에 좌우 1px 선과 80px 안쪽 여백 (Vercel 실측값)
+  assert.match(systemCss, /\.band-dark\s*\{[^}]*background:#000/s)
+  assert.match(systemCss, /#people\s*\{[^}]*display:block[^}]*max-width:1212px[^}]*padding:80px[^}]*border-inline:1px solid rgb\(255 255 255 \/ \.14\)/s)
+  assert.match(systemCss, /#people \.display\s*\{[^}]*font-size:clamp\(32px,4\.5vw,64px\)[^}]*font-weight:600[^}]*letter-spacing:-\.06em/s)
+  assert.match(systemCss, /#people \.lead\s*\{[^}]*max-width:576px[^}]*font:400 16px\/24px var\(--mono\)/s)
 
-  // 모바일 — 세로로 쌓되 초상(DOM상 뒤)을 order:-1로 먼저 올려 nav 아래에 고정; 프레임은 폭 100%에 높이만 제한
-  assert.match(systemCss, /@media\s*\(max-width:640px\)[\s\S]*?\.roster\s*\{[^}]*display:flex[^}]*flex-direction:column[^}]*grid-row:auto/s)
-  assert.match(systemCss, /@media\s*\(max-width:640px\)[\s\S]*?\.roster-stage\s*\{[^}]*order:-1[^}]*position:sticky[^}]*top:var\(--nav-h\)/s)
-  assert.match(systemCss, /@media\s*\(max-width:640px\)[\s\S]*?\.roster-frame\s*\{[^}]*aspect-ratio:auto[^}]*height:min\(44vh,340px\)/s)
-  // 태블릿(≤960)부터는 역할 태그가 이름 아래 줄로 내려가 이름이 꺾이지 않습니다
-  assert.match(systemCss, /@media\s*\(max-width:960px\)[\s\S]*?\.roster-item\s*\{[^}]*grid-template-columns:2\.4em minmax\(0,1fr\)/s)
-  assert.match(systemCss, /@media\s*\(max-width:960px\)[\s\S]*?\.roster-tag\s*\{[^}]*grid-column:2/s)
+  // 그리드와 카드 — 4열 40/32 간격, 231:269 초상, 흑백, 아래로 검게 사라지는 페이드
+  assert.match(systemCss, /\.spk-grid\s*\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*gap:40px 32px/s)
+  assert.match(systemCss, /\.spk\s*\{[^}]*flex-direction:column[^}]*gap:16px[^}]*padding:4px/s)
+  assert.match(systemCss, /\.spk-face\s*\{[^}]*aspect-ratio:231\/269[^}]*overflow:hidden[^}]*background:#000/s)
+  assert.match(systemCss, /\.spk-face img\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
+  assert.match(systemCss, /\.spk-face::after\s*\{[^}]*linear-gradient\(180deg,rgb\(0 0 0 \/ 0\) 58%,#000 100%\)/s)
+  assert.match(systemCss, /\.spk-name\s*\{[^}]*color:#ededed[^}]*font:400 20px\/30px var\(--mono\)[^}]*text-transform:uppercase/s)
+  assert.match(systemCss, /\.spk-aff\s*\{[^}]*color:#878787[^}]*font:400 16px\/24px var\(--mono\)[^}]*text-transform:uppercase/s)
 
-  // 동작 — 마우스 hover(마우스에서만)·포커스·클릭으로 선택, 화살표 키 이동, roving tabindex
-  const defaultIndexSource = appScript.match(/function defaultSpeakerIndex\(count\)\{[^}]*\}/)?.[0] ?? ''
-  const defaultIndexContext = {}
-  new Script(`${defaultIndexSource};result=[defaultSpeakerIndex(0),defaultSpeakerIndex(1),defaultSpeakerIndex(4)];`).runInNewContext(defaultIndexContext)
-  assert.deepEqual(Array.from(defaultIndexContext.result), [-1, 0, 0])
-  assert.match(appScript, /function setActiveSpeaker\(/)
-  assert.match(appScript, /function stepSpeaker\(/)
-  assert.match(appScript, /setAttribute\("aria-selected",\s*active\s*\?\s*"true"\s*:\s*"false"\)/)
-  assert.match(appScript, /tab\.tabIndex\s*=\s*active\s*\?\s*0\s*:\s*-1/)
-  assert.match(appScript, /setAttribute\("aria-labelledby","spk-tab-"\+normalized\)/)
-  assert.match(appScript, /addEventListener\("pointerover"/)
-  assert.match(appScript, /pointerType!=="mouse"/)
-  assert.match(appScript, /addEventListener\("focusin"/)
-  for (const key of ['ArrowUp', 'ArrowDown', 'Home', 'End']) assert.match(appScript, new RegExp(`"${key}"`))
-  assert.match(appScript, /activeSpeakerIndex=defaultSpeakerIndex\(state\.speakers\.length\)/)
-  assert.doesNotMatch(appScript, /spkPrev|spkNext|pointerdown|transitionend|track\.scrollTo|flex-basis/)
+  // 칩 — 데스크톱은 hover/focus에서만, 태블릿 이하는 항상 표시 (Vercel의 소셜 칩과 같은 동작)
+  assert.match(systemCss, /\.spk-chip\s*\{[^}]*left:8px[^}]*bottom:8px[^}]*text-transform:uppercase[^}]*opacity:0/s)
+  assert.match(systemCss, /\.spk:hover \.spk-chip,\.spk:focus-within \.spk-chip\s*\{opacity:1\}/)
+  assert.match(systemCss, /@media\s*\(max-width:960px\)[\s\S]*?\.spk-grid\s*\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)[^}]*gap:8px/s)
+  assert.match(systemCss, /@media\s*\(max-width:960px\)[\s\S]*?\.spk-chip\s*\{opacity:1\}/s)
+  assert.match(systemCss, /@media\s*\(max-width:960px\)[\s\S]*?#people\s*\{[^}]*border-inline:0/s)
+  assert.match(systemCss, /@media\s*\(max-width:640px\)[\s\S]*?\.spk-name\s*\{[^}]*font-size:14px/s)
+
+  // 렌더링 — 역할은 칩으로, 이름·소속은 캡션으로; 활성 상태 로직은 없음
+  assert.match(appScript, /function renderSpeakers\(/)
+  assert.match(appScript, /class="spk-chip">'\+esc\(s\.role\)/)
+  assert.match(appScript, /class="spk-name">'\+esc\(s\.name\)/)
+  assert.match(appScript, /class="spk-aff">'\+esc\(s\.aff\)/)
+  assert.doesNotMatch(appScript, /setActiveSpeaker|stepSpeaker|activeSpeakerIndex|tablist|pointerover|aria-selected/)
 })
 
-test('lets the roster grow to any size without clipping or fixed-height tracks', () => {
-  const roster = systemCss.match(/\.roster\s*\{([^}]*)\}/s)?.[1] ?? ''
-  const list = systemCss.match(/\.roster-list\s*\{([^}]*)\}/s)?.[1] ?? ''
-  const row = systemCss.match(/\.roster-item\s*\{([^}]*)\}/s)?.[1] ?? ''
-  assert.match(list, /list-style:none/)
-  assert.doesNotMatch(roster, /overflow:hidden|height:clamp|flex-wrap:nowrap/)
-  assert.doesNotMatch(list, /overflow:hidden|(?:^|;)\s*height:|flex-basis/)
-  assert.doesNotMatch(row, /flex-basis|(?:^|;)\s*height:/)
-
-  // 편집 모드의 추가/삭제도 목록의 행으로 렌더링됩니다
-  assert.match(appScript, /add\.className="roster-add"/)
+test('lets the speaker grid grow to any size and keeps Edit-mode add/remove as grid cells', () => {
+  const grid = systemCss.match(/\.spk-grid\s*\{([^}]*)\}/s)?.[1] ?? ''
+  assert.match(grid, /list-style:none/)
+  assert.doesNotMatch(grid, /overflow:hidden|(?:^|;)\s*height:|flex-wrap:nowrap/)
+  assert.match(appScript, /add\.className="spk-add"/)
   assert.match(appScript, /data-rm="'\+i\+'"/)
-  assert.match(systemCss, /\.roster-row \.rm\s*\{[^}]*display:none/s)
-  assert.match(systemCss, /body\.editing \.roster-row \.rm\s*\{[^}]*display:flex/s)
-  assert.match(systemCss, /body\.editing \.roster-add\s*\{[^}]*display:flex/s)
+  assert.match(systemCss, /\.spk-add-item\s*\{display:none\}/)
+  assert.match(systemCss, /body\.editing \.spk-add-item\s*\{display:block\}/)
+  assert.match(systemCss, /body\.editing \.spk-add\s*\{[^}]*display:flex/s)
+  assert.match(systemCss, /\.spk \.rm\s*\{[^}]*display:none/s)
+  assert.match(systemCss, /body\.editing \.spk \.rm\s*\{[^}]*display:flex[^}]*position:absolute/s)
 })
 
 test('immutably migrates the legacy speaker roster while preserving custom participants', () => {
@@ -461,7 +451,7 @@ test('implements the Vignelli-inspired visual system contract', () => {
   assert.match(systemCss, /--grid:\s*repeat\(12,minmax\(0,1fr\)\)/)
   assert.match(systemCss, /\.wrap\s*\{[^}]*grid-template-columns:var\(--grid\)/s)
   assert.match(systemCss, /\.kicker\s*\{[^}]*position:sticky/s)
-  const cssWithoutSpeakerOverlay = systemCss.replace(/\.roster-frame::after\s*\{[^}]*\}/s, '')
+  const cssWithoutSpeakerOverlay = systemCss.replace(/\.spk-face::after\s*\{[^}]*\}/s, '')
   assert.doesNotMatch(cssWithoutSpeakerOverlay, /linear-gradient|radial-gradient/i)
   assert.doesNotMatch(systemCss, /box-shadow\s*:\s*(?!none)/i)
 })

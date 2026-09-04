@@ -166,7 +166,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%' },
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%' },
     { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Andong National University · Department of K-Culture Contents', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' },
-    { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '71% 50%' }
+    { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%' }
   ])
 })
 
@@ -218,7 +218,7 @@ test('ships the approved metadata-free AI Manufacturing Lab portraits', () => {
 })
 
 test('ships the approved metadata-free Daeil Song portrait', () => {
-  const approvedPortraitHash = '09ac734e46c1d81537a61bac2938630958af979543b3129067234c30ec3b7848'
+  const approvedPortraitHash = '82aa67c06357ac42f80934b9bac94a2585626e40bafabc10250449916cb88251'
   assert.equal(sha256(songPortrait), approvedPortraitHash)
   assert.equal(songPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(songPortrait.subarray(8, 12).toString(), 'WEBP')

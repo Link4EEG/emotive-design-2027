@@ -173,8 +173,8 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%', logo: 'assets/logo/yonsei.webp' },
     { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
     { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: 'assets/logo/mbc.webp' },
-    { name: 'Prof Jong Jin Park', role: 'Discussant', aff: 'Kangnam University', photo: 'assets/human/jong-jin-park.webp', photoPosition: '50% 10%', logo: '' },
-    { name: 'Prof Hyunkyu Shin', role: 'Discussant', aff: 'Mokwon University · Construction Management', photo: 'assets/human/hyunkyu-shin.webp', photoPosition: '50% 10%', logo: '' }
+    { name: 'Prof Jong Jin Park', role: 'Discussant', aff: 'Kangnam University', photo: 'assets/human/jong-jin-park.webp', photoPosition: '50% 10%', logo: 'assets/logo/kangnam.webp' },
+    { name: 'Prof Hyunkyu Shin', role: 'Discussant', aff: 'Mokwon University · Construction Management', photo: 'assets/human/hyunkyu-shin.webp', photoPosition: '50% 10%', logo: 'assets/logo/mokwon.webp' }
   ])
 })
 
@@ -291,18 +291,21 @@ test('overlays each institution logo in its own colours at twice the original st
   const used = [...new Set(Array.from(context.result).filter(Boolean))]
   assert.deepEqual(used.sort(), [
     'assets/logo/gyeongkuk.webp', 'assets/logo/hanyang.webp', 'assets/logo/hongik.webp',
-    'assets/logo/jiangxi.webp', 'assets/logo/lg.webp', 'assets/logo/mbc.webp',
-    'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
+    'assets/logo/jiangxi.webp', 'assets/logo/kangnam.webp', 'assets/logo/lg.webp',
+    'assets/logo/mbc.webp', 'assets/logo/mokwon.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
   ])
 
-  // 로고를 아직 받지 못한 연사만 비어 있어야 합니다. 파일이 오면 이 목록에서 지웁니다.
+  // 모든 연사가 소속 로고를 갖습니다. 로고 없이 연사를 추가하면 여기서 막힙니다.
   const coverCtx = {}
   new Script(`${declaration};result=DEFAULT_SPEAKERS.filter(function(s){return !s.logo;}).map(function(s){return s.name;});`).runInNewContext(coverCtx)
-  assert.deepEqual(Array.from(coverCtx.result), ['Prof Jong Jin Park', 'Prof Hyunkyu Shin'],
-    'a speaker is missing an institution mark that was not expected to be missing')
+  assert.deepEqual(Array.from(coverCtx.result), [], 'every confirmed speaker should carry an institution mark')
 
-  // 워드마크는 정사각 인장과 폭만 맞추고 비율은 그대로 둡니다 (height:auto)
-  assert.match(systemCss, /\.spk-face img\.spk-logo\s*\{[^}]*height:auto/s)
+  // 로고는 원형 인장·가로 워드마크·세로 방패가 섞여 있습니다. 모두 같은 64px 정사각 안에
+  // 비율을 지킨 채 들어가고 좌측 상단에 정렬되어야 합니다.
+  assert.match(logoRule, /aspect-ratio:1/)
+  assert.match(logoRule, /object-fit:contain/)
+  assert.match(logoRule, /object-position:left top/)
+  assert.doesNotMatch(logoRule, /height:auto/)
 
   // 흰 판은 지금 배경이 가장 어두운 Luo Mi 카드에만 켜져 있습니다
   const plateCtx = {}

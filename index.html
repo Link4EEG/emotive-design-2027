@@ -353,7 +353,7 @@
   .spk-face img:not(.spk-logo){display:block;width:100%;height:100%;object-fit:cover;object-position:var(--speaker-position,50% 50%);filter:grayscale(1) contrast(1.05)}
   .spk-face .spk-initials{display:flex;width:100%;height:100%;align-items:center;justify-content:center;color:#ededed;font:600 clamp(40px,4vw,64px) 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em}
   .spk-face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgb(0 0 0 / 0) 58%,#000 100%);pointer-events:none}
-  .spk-face img.spk-logo{position:absolute;left:3.9%;top:3.35%;width:27.7%;height:auto;z-index:1;pointer-events:none}
+  .spk-face img.spk-logo{position:absolute;left:3.9%;top:3.35%;width:27.7%;aspect-ratio:1;object-fit:contain;object-position:left top;z-index:1;pointer-events:none}
   .spk-face img.spk-logo.has-plate{background:#fff;border-radius:50%}
   .spk-chip{position:absolute;left:8px;bottom:8px;z-index:1;padding:6px 8px;border:1px solid rgb(255 255 255 / .18);background:rgb(0 0 0 / .72);color:#ededed;font:400 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;opacity:0;transition:opacity .2s}
   .spk:hover .spk-chip,.spk:focus-within .spk-chip{opacity:1}
@@ -908,8 +908,8 @@
     {name:"Prof Jin Woo Lee", role:"Discussant", aff:"Yonsei University · Department of Urban Planning and Engineering", color:"#d52b1e", photo:"assets/human/jin-woo-lee.webp", photoPosition:"50% 40%", logo:"assets/logo/yonsei.webp"},
     {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Gyeongkuk National University · Major of Fine Art", color:"#171717", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%", logo:"assets/logo/gyeongkuk.webp"},
     {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#d52b1e", photo:"assets/human/daeil-song.webp", photoPosition:"50% 25%", logo:"assets/logo/mbc.webp"},
-    {name:"Prof Jong Jin Park", role:"Discussant", aff:"Kangnam University", color:"#171717", photo:"assets/human/jong-jin-park.webp", photoPosition:"50% 10%", logo:""},
-    {name:"Prof Hyunkyu Shin", role:"Discussant", aff:"Mokwon University · Construction Management", color:"#d52b1e", photo:"assets/human/hyunkyu-shin.webp", photoPosition:"50% 10%", logo:""}
+    {name:"Prof Jong Jin Park", role:"Discussant", aff:"Kangnam University", color:"#171717", photo:"assets/human/jong-jin-park.webp", photoPosition:"50% 10%", logo:"assets/logo/kangnam.webp"},
+    {name:"Prof Hyunkyu Shin", role:"Discussant", aff:"Mokwon University · Construction Management", color:"#d52b1e", photo:"assets/human/hyunkyu-shin.webp", photoPosition:"50% 10%", logo:"assets/logo/mokwon.webp"}
   ];
 
   /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.

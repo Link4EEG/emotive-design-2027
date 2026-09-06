@@ -267,8 +267,16 @@ test('overlays each institution logo in its own colours at twice the original st
   assert.match(logoRule, /z-index:1/)
   assert.match(logoRule, /pointer-events:none/)
   assert.doesNotMatch(logoRule, /filter:/)
-  assert.match(appScript, /class="spk-logo"/)
+  assert.match(appScript, /class="spk-logo/)
   assert.match(appScript, /s\.logo\s*\?/)
+
+  // 어두운 사진 위에서는 로고 뒤에 흰 판을 깔 수 있습니다 (원형 인장에 맞춘 원형 판)
+  const plateRule = systemCss.match(/\.spk-face img\.spk-logo\.has-plate\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(plateRule, /background:#fff/)
+  assert.match(plateRule, /border-radius:50%/)
+  assert.match(plateRule, /padding:5%/)
+  assert.match(appScript, /s\.logoPlate\s*\?\s*" has-plate"\s*:\s*""/)
+
 
   // 로고 자산: 투명도를 가진 메타데이터 없는 WebP
   const declaration = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
@@ -279,6 +287,11 @@ test('overlays each institution logo in its own colours at twice the original st
     'assets/logo/hanyang.webp', 'assets/logo/hongik.webp', 'assets/logo/jiangxi.webp',
     'assets/logo/lg.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
   ])
+
+  // 흰 판은 지금 배경이 가장 어두운 Luo Mi 카드에만 켜져 있습니다
+  const plateCtx = {}
+  new Script(`${declaration};result=DEFAULT_SPEAKERS.filter(function(s){return s.logoPlate;}).map(function(s){return s.name;});`).runInNewContext(plateCtx)
+  assert.deepEqual(Array.from(plateCtx.result), ['Prof Luo Mi'])
 })
 
 test('reproduces the Vercel Ship speaker grid: dark framed section, mono captions, four-up portraits', () => {

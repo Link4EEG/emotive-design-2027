@@ -350,9 +350,10 @@
   .spk-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px 32px;margin:0;padding:0;list-style:none}
   .spk{position:relative;display:flex;flex-direction:column;gap:16px;padding:4px;min-width:0}
   .spk-face{position:relative;aspect-ratio:231/269;overflow:hidden;background:#000}
-  .spk-face img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--speaker-position,50% 50%);filter:grayscale(1) contrast(1.05)}
+  .spk-face img:not(.spk-logo){display:block;width:100%;height:100%;object-fit:cover;object-position:var(--speaker-position,50% 50%);filter:grayscale(1) contrast(1.05)}
   .spk-face .spk-initials{display:flex;width:100%;height:100%;align-items:center;justify-content:center;color:#ededed;font:600 clamp(40px,4vw,64px) 'Helvetica Neue',Helvetica,Arial,sans-serif;letter-spacing:-.05em}
   .spk-face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgb(0 0 0 / 0) 58%,#000 100%);pointer-events:none}
+  .spk-face img.spk-logo{position:absolute;left:3.9%;top:3.35%;width:27.7%;height:auto;z-index:1;pointer-events:none}
   .spk-chip{position:absolute;left:8px;bottom:8px;z-index:1;padding:6px 8px;border:1px solid rgb(255 255 255 / .18);background:rgb(0 0 0 / .72);color:#ededed;font:400 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;opacity:0;transition:opacity .2s}
   .spk:hover .spk-chip,.spk:focus-within .spk-chip{opacity:1}
   .spk-text{display:grid;gap:0}
@@ -894,18 +895,18 @@
     film1: "assets/emotive-film-trailer.mp4"
   };
   var DEFAULT_SPEAKERS = [
-    {name:"Dr Seung Yeul Ji", role:"Keynote · Author", aff:"Hanyang University · Visiting Senior Fellow, UNSW Sydney", color:"#171717", photo:"assets/human/seung-yeul-ji.webp", photoPosition:"50% 28%"},
-    {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:"assets/human/ju-hyun-lee.webp", photoPosition:"50% 42%"},
-    {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:"assets/human/michael-ostwald.webp", photoPosition:"50% 44%"},
-    {name:"Prof Hanjong Jun", role:"Discussant", aff:"Hanyang University · School of Architecture", color:"#d52b1e", photo:"assets/human/hanjong-jun.webp", photoPosition:"50% 38%"},
-    {name:"Jaehwan Kim", role:"Discussant", aff:"LG AI Research · Product Manager, Product Innovation Team", color:"#171717", photo:"assets/human/jaehwan-kim.webp", photoPosition:"50% 15%"},
-    {name:"Prof Kyung Ho Ko", role:"Discussant", aff:"Hongik University · Department of Sculpture", color:"#d52b1e", photo:"assets/human/kyung-ho-ko.webp", photoPosition:"50% 30%"},
-    {name:"Prof Yeon Shim Chung", role:"Discussant", aff:"Hongik University · Department of Art History and Theory", color:"#171717", photo:"assets/human/yeon-shim-chung.webp", photoPosition:"50% 12%"},
-    {name:"Prof Luo Mi", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab", color:"#d52b1e", photo:"assets/human/luo-mi.webp", photoPosition:"50% 0%"},
-    {name:"Prof Yun Kyung Lee", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab", color:"#171717", photo:"assets/human/yun-kyung-lee.webp", photoPosition:"50% 10%"},
-    {name:"Prof Jin Woo Lee", role:"Discussant", aff:"Yonsei University · Department of Urban Planning and Engineering", color:"#d52b1e", photo:"assets/human/jin-woo-lee.webp", photoPosition:"50% 40%"},
-    {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Gyeongkuk National University · Major of Fine Art", color:"#171717", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%"},
-    {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#d52b1e", photo:"assets/human/daeil-song.webp", photoPosition:"50% 25%"}
+    {name:"Dr Seung Yeul Ji", role:"Keynote · Author", aff:"Hanyang University · Visiting Senior Fellow, UNSW Sydney", color:"#171717", photo:"assets/human/seung-yeul-ji.webp", photoPosition:"50% 28%", logo:"assets/logo/hanyang.webp"},
+    {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:"assets/human/ju-hyun-lee.webp", photoPosition:"50% 42%", logo:"assets/logo/unsw.webp"},
+    {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:"assets/human/michael-ostwald.webp", photoPosition:"50% 44%", logo:"assets/logo/unsw.webp"},
+    {name:"Prof Hanjong Jun", role:"Discussant", aff:"Hanyang University · School of Architecture", color:"#d52b1e", photo:"assets/human/hanjong-jun.webp", photoPosition:"50% 38%", logo:"assets/logo/hanyang.webp"},
+    {name:"Jaehwan Kim", role:"Discussant", aff:"LG AI Research · Product Manager, Product Innovation Team", color:"#171717", photo:"assets/human/jaehwan-kim.webp", photoPosition:"50% 15%", logo:"assets/logo/lg.webp"},
+    {name:"Prof Kyung Ho Ko", role:"Discussant", aff:"Hongik University · Department of Sculpture", color:"#d52b1e", photo:"assets/human/kyung-ho-ko.webp", photoPosition:"50% 30%", logo:"assets/logo/hongik.webp"},
+    {name:"Prof Yeon Shim Chung", role:"Discussant", aff:"Hongik University · Department of Art History and Theory", color:"#171717", photo:"assets/human/yeon-shim-chung.webp", photoPosition:"50% 12%", logo:"assets/logo/hongik.webp"},
+    {name:"Prof Luo Mi", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab", color:"#d52b1e", photo:"assets/human/luo-mi.webp", photoPosition:"50% 0%", logo:"assets/logo/jiangxi.webp"},
+    {name:"Prof Yun Kyung Lee", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab", color:"#171717", photo:"assets/human/yun-kyung-lee.webp", photoPosition:"50% 10%", logo:"assets/logo/jiangxi.webp"},
+    {name:"Prof Jin Woo Lee", role:"Discussant", aff:"Yonsei University · Department of Urban Planning and Engineering", color:"#d52b1e", photo:"assets/human/jin-woo-lee.webp", photoPosition:"50% 40%", logo:"assets/logo/yonsei.webp"},
+    {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Gyeongkuk National University · Major of Fine Art", color:"#171717", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%", logo:""},
+    {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#d52b1e", photo:"assets/human/daeil-song.webp", photoPosition:"50% 25%", logo:""}
   ];
 
   /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.
@@ -981,9 +982,10 @@
         if(!known) return speaker;
         var photo=speaker.photo||known.photo;
         var photoPosition=speaker.photoPosition||known.photoPosition;
-        if(photo===speaker.photo&&photoPosition===speaker.photoPosition) return speaker;
+        var logo=speaker.logo==null?known.logo:speaker.logo;
+        if(photo===speaker.photo&&photoPosition===speaker.photoPosition&&logo===speaker.logo) return speaker;
         speakersChanged=true;
-        return Object.assign({},speaker,{photo:photo,photoPosition:photoPosition});
+        return Object.assign({},speaker,{photo:photo,photoPosition:photoPosition,logo:logo});
       });
       var savedRosterVersion=value.rosterVersion||0;
       if(savedRosterVersion<ROSTER_VERSION){
@@ -1094,7 +1096,8 @@
       var face = s.photo
         ? '<img src="'+esc(s.photo)+'" alt="'+esc(s.name)+'" loading="lazy" decoding="async">'
         : '<div class="spk-initials" style="background:'+speakerColor(s.color)+'">'+esc(initials(s.name))+'</div>';
-      card.innerHTML='<div class="spk-face">'+face+'<span class="spk-chip">'+esc(s.role)+'</span></div>'+
+      var logo = s.logo ? '<img class="spk-logo" src="'+esc(s.logo)+'" alt="" loading="lazy" decoding="async">' : '';
+      card.innerHTML='<div class="spk-face">'+face+logo+'<span class="spk-chip">'+esc(s.role)+'</span></div>'+
         '<div class="spk-text"><p class="spk-name">'+esc(s.name)+'</p><p class="spk-aff">'+esc(s.aff)+'</p></div>'+
         '<button type="button" class="rm" title="Remove" aria-label="Remove '+esc(s.name)+'" data-rm="'+i+'">×</button>';
       grid.appendChild(card);
@@ -1247,7 +1250,7 @@
   });
   $("#spkSave").addEventListener("click", function(){
     var name=$("#spkName").value.trim(); if(!name){ $("#spkName").focus(); return; }
-    var speaker = { name:name, role:$("#spkRole").value.trim()||"Discussant", aff:$("#spkAff").value.trim()||"", photo:$("#spkPhotoPath").value.trim(), photoPosition:"50% 50%", color:PALETTE[state.speakers.length%PALETTE.length] };
+    var speaker = { name:name, role:$("#spkRole").value.trim()||"Discussant", aff:$("#spkAff").value.trim()||"", photo:$("#spkPhotoPath").value.trim(), photoPosition:"50% 50%", logo:"", color:PALETTE[state.speakers.length%PALETTE.length] };
     state = Object.assign({}, state, {speakers:state.speakers.concat([speaker])});
     save(); renderSpeakers(); spkDlg.close();
   });

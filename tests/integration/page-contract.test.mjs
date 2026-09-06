@@ -158,38 +158,38 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
   new Script(`${declaration};result=DEFAULT_SPEAKERS;`).runInNewContext(context)
   const speakers = JSON.parse(JSON.stringify(context.result))
 
-  assert.deepEqual(speakers.map(({ name, role, aff, photo, photoPosition }) => ({ name, role, aff, photo, photoPosition })), [
-    { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', photo: 'assets/human/seung-yeul-ji.webp', photoPosition: '50% 28%' },
-    { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%' },
-    { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%' },
-    { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%' },
-    { name: 'Jaehwan Kim', role: 'Discussant', aff: 'LG AI Research · Product Manager, Product Innovation Team', photo: 'assets/human/jaehwan-kim.webp', photoPosition: '50% 15%' },
-    { name: 'Prof Kyung Ho Ko', role: 'Discussant', aff: 'Hongik University · Department of Sculpture', photo: 'assets/human/kyung-ho-ko.webp', photoPosition: '50% 30%' },
-    { name: 'Prof Yeon Shim Chung', role: 'Discussant', aff: 'Hongik University · Department of Art History and Theory', photo: 'assets/human/yeon-shim-chung.webp', photoPosition: '50% 12%' },
-    { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%' },
-    { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%' },
-    { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%' },
-    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' },
-    { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%' }
+  assert.deepEqual(speakers.map(({ name, role, aff, photo, photoPosition, logo }) => ({ name, role, aff, photo, photoPosition, logo })), [
+    { name: 'Dr Seung Yeul Ji', role: 'Keynote · Author', aff: 'Hanyang University · Visiting Senior Fellow, UNSW Sydney', photo: 'assets/human/seung-yeul-ji.webp', photoPosition: '50% 28%', logo: 'assets/logo/hanyang.webp' },
+    { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%', logo: 'assets/logo/unsw.webp' },
+    { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%', logo: 'assets/logo/unsw.webp' },
+    { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%', logo: 'assets/logo/hanyang.webp' },
+    { name: 'Jaehwan Kim', role: 'Discussant', aff: 'LG AI Research · Product Manager, Product Innovation Team', photo: 'assets/human/jaehwan-kim.webp', photoPosition: '50% 15%', logo: 'assets/logo/lg.webp' },
+    { name: 'Prof Kyung Ho Ko', role: 'Discussant', aff: 'Hongik University · Department of Sculpture', photo: 'assets/human/kyung-ho-ko.webp', photoPosition: '50% 30%', logo: 'assets/logo/hongik.webp' },
+    { name: 'Prof Yeon Shim Chung', role: 'Discussant', aff: 'Hongik University · Department of Art History and Theory', photo: 'assets/human/yeon-shim-chung.webp', photoPosition: '50% 12%', logo: 'assets/logo/hongik.webp' },
+    { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%', logo: 'assets/logo/jiangxi.webp' },
+    { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%', logo: 'assets/logo/jiangxi.webp' },
+    { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%', logo: 'assets/logo/yonsei.webp' },
+    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: '' },
+    { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: '' }
   ])
 })
 
 test('ships the updated Seung Yeul Ji portrait rather than the previous image', () => {
-  const approvedPortraitHash = '015ec3aa5d1567b64e5a154456d44a726b5cff68ef33f698d728bdc017e2933f'
+  const approvedPortraitHash = '6879749c49e7d0724b709e8f2fef8a701d00f1adec4385bbd94cdcddcfb96ce4'
   assert.equal(sha256(seungPortrait), approvedPortraitHash)
   assert.equal(seungPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(seungPortrait.subarray(8, 12).toString(), 'WEBP')
 })
 
 test('ships the approved metadata-free Hanjong Jun portrait', () => {
-  const approvedPortraitHash = '5c72d7968c9e1617c934bdc2c8b9bdb6f0e945274a5dab1de1748e01a15f6257'
+  const approvedPortraitHash = '9e55de99fe28c8d653ebd67ee1d10f4b3d0d9cf9aa5089d9275cc70b052d7e19'
   assert.equal(sha256(hanjongPortrait), approvedPortraitHash)
   assert.equal(hanjongPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(hanjongPortrait.subarray(8, 12).toString(), 'WEBP')
 })
 
 test('ships the approved metadata-free Kyung Ho Ko portrait', () => {
-  const approvedPortraitHash = '221c1c7cd51122280c311ee0421fd30a8d935e0cb31fc88159757578e06d81e7'
+  const approvedPortraitHash = '5b0122bf064c889b95cb4d372a98809cc2806f6748f6bf5e3728ca5981d487d7'
   assert.equal(sha256(koPortrait), approvedPortraitHash)
   assert.equal(koPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(koPortrait.subarray(8, 12).toString(), 'WEBP')
@@ -198,7 +198,7 @@ test('ships the approved metadata-free Kyung Ho Ko portrait', () => {
 })
 
 test('ships the approved metadata-free Yeon Shim Chung portrait', () => {
-  const approvedPortraitHash = '8e38e4354138a3407ad845735840732b069b05cb0ed48ea27e009be70cd5ff98'
+  const approvedPortraitHash = '0abc0a11d76b3425f50ce50945950c620c7187f8c6d4a085726147dfebe9d454'
   assert.equal(sha256(chungPortrait), approvedPortraitHash)
   assert.equal(chungPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(chungPortrait.subarray(8, 12).toString(), 'WEBP')
@@ -248,11 +248,37 @@ test('ships the approved metadata-free Eon Yong Kim portrait', () => {
 })
 
 test('ships the approved metadata-free Jaehwan Kim portrait', () => {
-  const approvedPortraitHash = '1dba78c062ed5925cf66c8e454f8f0c580951690208a54854588dd5860819d54'
+  const approvedPortraitHash = '708b6c1b8cc28737f5524d3e637c8fc7c6918b94619fee51710d4c801eda4f7e'
   assert.equal(sha256(jaehwanPortrait), approvedPortraitHash)
   assert.equal(jaehwanPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(jaehwanPortrait.subarray(8, 12).toString(), 'WEBP')
   for (const chunk of ['EXIF', 'XMP ', 'ICCP']) assert.ok(!jaehwanPortrait.includes(Buffer.from(chunk)), `portrait still carries ${chunk.trim()}`)
+})
+
+test('overlays each institution logo in its own colours at twice the original stamp size', () => {
+  // 사진에는 흑백 필터가 걸려 있으므로, 로고는 사진의 형제 요소로 얹어야 원색이 유지됩니다
+  // 사진 규칙은 로고를 제외해야 합니다. `.spk-face img`가 `.spk-logo`보다 특이도가 높아 그대로 두면 로고까지 흑백이 됩니다.
+  assert.match(systemCss, /\.spk-face img:not\(\.spk-logo\)\s*\{[^}]*filter:grayscale\(1\)/s)
+  const logoRule = systemCss.match(/\.spk-face img\.spk-logo\s*\{[^}]*\}/s)?.[0] ?? ''
+  assert.match(logoRule, /position:absolute/)
+  assert.match(logoRule, /left:3\.9%/)
+  assert.match(logoRule, /top:3\.35%/)
+  assert.match(logoRule, /width:27\.7%/)
+  assert.match(logoRule, /z-index:1/)
+  assert.match(logoRule, /pointer-events:none/)
+  assert.doesNotMatch(logoRule, /filter:/)
+  assert.match(appScript, /class="spk-logo"/)
+  assert.match(appScript, /s\.logo\s*\?/)
+
+  // 로고 자산: 투명도를 가진 메타데이터 없는 WebP
+  const declaration = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const context = {}
+  new Script(`${declaration};result=DEFAULT_SPEAKERS.map(function(s){return s.logo;});`).runInNewContext(context)
+  const used = [...new Set(Array.from(context.result).filter(Boolean))]
+  assert.deepEqual(used.sort(), [
+    'assets/logo/hanyang.webp', 'assets/logo/hongik.webp', 'assets/logo/jiangxi.webp',
+    'assets/logo/lg.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
+  ])
 })
 
 test('reproduces the Vercel Ship speaker grid: dark framed section, mono captions, four-up portraits', () => {
@@ -271,7 +297,7 @@ test('reproduces the Vercel Ship speaker grid: dark framed section, mono caption
   assert.match(systemCss, /\.spk-grid\s*\{[^}]*grid-template-columns:repeat\(4,minmax\(0,1fr\)\)[^}]*gap:40px 32px/s)
   assert.match(systemCss, /\.spk\s*\{[^}]*flex-direction:column[^}]*gap:16px[^}]*padding:4px/s)
   assert.match(systemCss, /\.spk-face\s*\{[^}]*aspect-ratio:231\/269[^}]*overflow:hidden[^}]*background:#000/s)
-  assert.match(systemCss, /\.spk-face img\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
+  assert.match(systemCss, /\.spk-face img:not\(\.spk-logo\)\s*\{[^}]*object-fit:cover[^}]*object-position:var\(--speaker-position[^}]*filter:grayscale\(1\)/s)
   assert.match(systemCss, /\.spk-face::after\s*\{[^}]*linear-gradient\(180deg,rgb\(0 0 0 \/ 0\) 58%,#000 100%\)/s)
   assert.match(systemCss, /\.spk-name\s*\{[^}]*color:#ededed[^}]*font:400 20px\/30px var\(--mono\)[^}]*text-transform:uppercase/s)
   assert.match(systemCss, /\.spk-aff\s*\{[^}]*color:#878787[^}]*font:400 16px\/24px var\(--mono\)[^}]*text-transform:uppercase/s)
@@ -401,6 +427,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
     ['Daeil Song', 'assets/human/daeil-song.webp', 'MBC · Head Writer, Documentary']
   ]) {
     assert.equal(byName[name].photo, photo, `${name}: photo`)
+    assert.ok(byName[name].logo === undefined || typeof byName[name].logo === 'string', `${name}: logo type`)
     assert.equal(byName[name].aff, aff, `${name}: affiliation`)
   }
   assert.equal(migrated.rosterVersion, currentRosterVersion)

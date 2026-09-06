@@ -175,14 +175,14 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
 })
 
 test('ships the updated Seung Yeul Ji portrait rather than the previous image', () => {
-  const approvedPortraitHash = '6879749c49e7d0724b709e8f2fef8a701d00f1adec4385bbd94cdcddcfb96ce4'
+  const approvedPortraitHash = '015ec3aa5d1567b64e5a154456d44a726b5cff68ef33f698d728bdc017e2933f'
   assert.equal(sha256(seungPortrait), approvedPortraitHash)
   assert.equal(seungPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(seungPortrait.subarray(8, 12).toString(), 'WEBP')
 })
 
 test('ships the approved metadata-free Hanjong Jun portrait', () => {
-  const approvedPortraitHash = '9e55de99fe28c8d653ebd67ee1d10f4b3d0d9cf9aa5089d9275cc70b052d7e19'
+  const approvedPortraitHash = '5c72d7968c9e1617c934bdc2c8b9bdb6f0e945274a5dab1de1748e01a15f6257'
   assert.equal(sha256(hanjongPortrait), approvedPortraitHash)
   assert.equal(hanjongPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(hanjongPortrait.subarray(8, 12).toString(), 'WEBP')

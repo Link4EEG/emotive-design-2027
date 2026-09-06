@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
-const LOGOS = ['hanyang', 'hongik', 'jiangxi', 'lg', 'mbc', 'unsw', 'yonsei']
+const LOGOS = ['gyeongkuk', 'hanyang', 'hongik', 'jiangxi', 'lg', 'mbc', 'unsw', 'yonsei']
 
 test('ships every institution logo as a metadata-free WebP with transparency', async () => {
   for (const name of LOGOS) {

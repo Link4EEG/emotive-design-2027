@@ -169,7 +169,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%', logo: 'assets/logo/yonsei.webp' },
-    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: '' },
+    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
     { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: 'assets/logo/mbc.webp' }
   ])
 })
@@ -284,9 +284,15 @@ test('overlays each institution logo in its own colours at twice the original st
   new Script(`${declaration};result=DEFAULT_SPEAKERS.map(function(s){return s.logo;});`).runInNewContext(context)
   const used = [...new Set(Array.from(context.result).filter(Boolean))]
   assert.deepEqual(used.sort(), [
-    'assets/logo/hanyang.webp', 'assets/logo/hongik.webp', 'assets/logo/jiangxi.webp',
-    'assets/logo/lg.webp', 'assets/logo/mbc.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
+    'assets/logo/gyeongkuk.webp', 'assets/logo/hanyang.webp', 'assets/logo/hongik.webp',
+    'assets/logo/jiangxi.webp', 'assets/logo/lg.webp', 'assets/logo/mbc.webp',
+    'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
   ])
+
+  // 이제 모든 연사가 소속 로고를 갖습니다
+  const coverCtx = {}
+  new Script(`${declaration};result=DEFAULT_SPEAKERS.filter(function(s){return !s.logo;}).map(function(s){return s.name;});`).runInNewContext(coverCtx)
+  assert.deepEqual(Array.from(coverCtx.result), [], 'every confirmed speaker should carry an institution mark')
 
   // 워드마크는 정사각 인장과 폭만 맞추고 비율은 그대로 둡니다 (height:auto)
   assert.match(systemCss, /\.spk-face img\.spk-logo\s*\{[^}]*height:auto/s)

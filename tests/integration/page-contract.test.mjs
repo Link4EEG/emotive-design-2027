@@ -189,7 +189,7 @@ test('ships the approved metadata-free Hanjong Jun portrait', () => {
 })
 
 test('ships the approved metadata-free Kyung Ho Ko portrait', () => {
-  const approvedPortraitHash = '5b0122bf064c889b95cb4d372a98809cc2806f6748f6bf5e3728ca5981d487d7'
+  const approvedPortraitHash = '221c1c7cd51122280c311ee0421fd30a8d935e0cb31fc88159757578e06d81e7'
   assert.equal(sha256(koPortrait), approvedPortraitHash)
   assert.equal(koPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(koPortrait.subarray(8, 12).toString(), 'WEBP')
@@ -198,7 +198,7 @@ test('ships the approved metadata-free Kyung Ho Ko portrait', () => {
 })
 
 test('ships the approved metadata-free Yeon Shim Chung portrait', () => {
-  const approvedPortraitHash = '0abc0a11d76b3425f50ce50945950c620c7187f8c6d4a085726147dfebe9d454'
+  const approvedPortraitHash = '8e38e4354138a3407ad845735840732b069b05cb0ed48ea27e009be70cd5ff98'
   assert.equal(sha256(chungPortrait), approvedPortraitHash)
   assert.equal(chungPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(chungPortrait.subarray(8, 12).toString(), 'WEBP')

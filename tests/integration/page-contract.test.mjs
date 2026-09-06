@@ -238,7 +238,7 @@ test('ships the approved metadata-free Jin Woo Lee portrait', () => {
 })
 
 test('ships the approved metadata-free Eon Yong Kim portrait', () => {
-  const approvedPortraitHash = '9ba0758a215c8f031b3eaa01389e7d089a8a74e387b277f1fef0eb0892a91d2b'
+  const approvedPortraitHash = '78e57c960afafd55c870158c4ffdc36cbcff62ab15878816a03cadac966b7b1f'
   assert.equal(sha256(eonYongPortrait), approvedPortraitHash)
   assert.equal(eonYongPortrait.subarray(0, 4).toString(), 'RIFF')
   assert.equal(eonYongPortrait.subarray(8, 12).toString(), 'WEBP')

@@ -170,7 +170,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%', logo: 'assets/logo/yonsei.webp' },
     { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: '' },
-    { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: '' }
+    { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: 'assets/logo/mbc.webp' }
   ])
 })
 
@@ -285,8 +285,11 @@ test('overlays each institution logo in its own colours at twice the original st
   const used = [...new Set(Array.from(context.result).filter(Boolean))]
   assert.deepEqual(used.sort(), [
     'assets/logo/hanyang.webp', 'assets/logo/hongik.webp', 'assets/logo/jiangxi.webp',
-    'assets/logo/lg.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
+    'assets/logo/lg.webp', 'assets/logo/mbc.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
   ])
+
+  // 워드마크는 정사각 인장과 폭만 맞추고 비율은 그대로 둡니다 (height:auto)
+  assert.match(systemCss, /\.spk-face img\.spk-logo\s*\{[^}]*height:auto/s)
 
   // 흰 판은 지금 배경이 가장 어두운 Luo Mi 카드에만 켜져 있습니다
   const plateCtx = {}

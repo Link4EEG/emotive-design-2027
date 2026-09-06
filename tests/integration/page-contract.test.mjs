@@ -73,6 +73,7 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
   const migrationSource = script.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
   const versionSource = script.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
   const additionsSource = script.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const correctionsSource = script.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const currentRosterVersion = Number(versionSource.match(/\d+/)?.[0])
   const input = {
     rosterVersion: currentRosterVersion,
@@ -97,6 +98,7 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
     ${defaultsSource}
     ${versionSource}
     ${additionsSource}
+    ${correctionsSource}
     ${migrationSource}
     result=migrateState(input);
   `).runInNewContext(context)
@@ -165,7 +167,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%' },
     { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%' },
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%' },
-    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Andong National University · Department of K-Culture Contents', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' },
+    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' },
     { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%' }
   ])
 })
@@ -298,6 +300,7 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
   const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
   const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
   const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const corrections2 = appScript.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const input = {
     text: {},
     videos: { clip0: 'custom-hero.mp4' },
@@ -317,6 +320,7 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
     ${defaults}
     ${version}
     ${additions}
+    ${corrections2}
     ${migration}
     result=migrateState(input);
   `).runInNewContext(context)
@@ -339,13 +343,17 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
   const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const corrections2 = appScript.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
   const currentRosterVersion = Number(version.match(/\d+/)?.[0])
+  // 가장 마지막으로 '추가'된 연사의 판 번호. 판이 정정만으로 올라가도 이 검증은 그대로 성립합니다.
+  const newestAddition = Math.max(...[...additions.matchAll(/version:(\d+)/g)].map((m) => Number(m[1])))
   const preamble = `
     var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
     ${defaults}
     ${version}
     ${additions}
+    ${corrections2}
     ${migration}
   `
   const migrate = (input) => {
@@ -381,7 +389,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   assert.equal(migrated.speakers[6].photo, 'assets/human/jin-woo-lee.webp')
   assert.equal(migrated.speakers[6].aff, 'Yonsei University · Department of Urban Planning and Engineering')
   assert.equal(migrated.speakers[7].photo, 'assets/human/eon-yong-kim.webp')
-  assert.equal(migrated.speakers[7].aff, 'Andong National University · Department of K-Culture Contents')
+  assert.equal(migrated.speakers[7].aff, 'Gyeongkuk National University · Major of Fine Art')
   assert.equal(migrated.speakers[8].photo, 'assets/human/daeil-song.webp')
   assert.equal(migrated.speakers[8].aff, 'MBC · Head Writer, Documentary')
   assert.equal(migrated.rosterVersion, currentRosterVersion)
@@ -397,7 +405,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
 
   // 이미 본 판에서 직접 지운 연사는 다음 판 이주에서도 되살아나지 않습니다
   const removedEarlier = Object.assign({}, migrated, {
-    rosterVersion: currentRosterVersion - 1,
+    rosterVersion: newestAddition - 1,
     speakers: migrated.speakers.filter((speaker) => speaker.name === 'Dr Seung Yeul Ji' || speaker.name === 'Prof Hanjong Jun')
   })
   // 앞사람(Jin Woo Lee)이 없으면 그보다 앞에서 남아 있는 사람(Hanjong Jun) 뒤에 끼웁니다
@@ -414,6 +422,48 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   ])
 })
 
+test('corrects a stale affiliation in a saved roster without touching custom edits', () => {
+  const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
+  const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const corrections = appScript.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
+  const currentRosterVersion = Number(version.match(/\d+/)?.[0])
+  const preamble = `
+    var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+    ${defaults}
+    ${version}
+    ${additions}
+    ${corrections}
+    ${migration}
+  `
+  const migrate = (input) => {
+    const context = { input }
+    new Script(`${preamble}result=migrateState(input);`).runInNewContext(context)
+    return context.result
+  }
+  const saved = (aff) => ({
+    rosterVersion: currentRosterVersion - 1,
+    text: {},
+    videos: {},
+    speakers: [{ name: 'Prof Eon Yong Kim', role: 'Discussant', aff, color: '#d52b1e', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' }]
+  })
+
+  // 옛 소속을 그대로 들고 있으면 정정합니다
+  const stale = saved('Andong National University · Department of K-Culture Contents')
+  const staleOriginal = JSON.parse(JSON.stringify(stale))
+  const corrected = migrate(stale)
+  assert.equal(corrected.speakers[0].aff, 'Gyeongkuk National University · Major of Fine Art')
+  assert.equal(corrected.rosterVersion, currentRosterVersion)
+  assert.deepEqual(stale, staleOriginal)
+
+  // 다시 이주해도 그대로입니다
+  assert.equal(migrate(JSON.parse(JSON.stringify(corrected))).speakers[0].aff, 'Gyeongkuk National University · Major of Fine Art')
+
+  // 편집 모드에서 직접 고쳐 둔 소속은 건드리지 않습니다
+  assert.equal(migrate(saved('My own wording')).speakers[0].aff, 'My own wording')
+})
+
 test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {
   const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const migration = appScript.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
@@ -424,6 +474,7 @@ test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {
   }
   const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
   const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
+  const corrections2 = appScript.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const original = JSON.parse(JSON.stringify(input))
   const context = { input }
 
@@ -432,6 +483,7 @@ test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {
     ${defaults}
     ${version}
     ${additions}
+    ${corrections2}
     ${migration}
     result=migrateState(input);
   `).runInNewContext(context)

@@ -903,14 +903,14 @@
     {name:"Prof Luo Mi", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab", color:"#171717", photo:"assets/human/luo-mi.webp", photoPosition:"50% 0%"},
     {name:"Prof Yun Kyung Lee", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab", color:"#d52b1e", photo:"assets/human/yun-kyung-lee.webp", photoPosition:"50% 10%"},
     {name:"Prof Jin Woo Lee", role:"Discussant", aff:"Yonsei University · Department of Urban Planning and Engineering", color:"#171717", photo:"assets/human/jin-woo-lee.webp", photoPosition:"50% 40%"},
-    {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Andong National University · Department of K-Culture Contents", color:"#d52b1e", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%"},
+    {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Gyeongkuk National University · Major of Fine Art", color:"#d52b1e", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%"},
     {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#171717", photo:"assets/human/daeil-song.webp", photoPosition:"50% 25%"}
   ];
 
   /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.
      저장된 명단은 자기 판보다 나중에 확정된 연사만 한 번 이어받으므로,
      이미 본 뒤 직접 지운 연사는 다음 판에서도 되살아나지 않습니다. */
-  var ROSTER_VERSION = 7;
+  var ROSTER_VERSION = 8;
   var ROSTER_ADDITIONS = [
     {version:2, name:"Prof Kyung Ho Ko"},
     {version:3, name:"Prof Yeon Shim Chung"},
@@ -919,6 +919,11 @@
     {version:5, name:"Daeil Song"},
     {version:6, name:"Prof Jin Woo Lee"},
     {version:7, name:"Prof Eon Yong Kim"}
+  ];
+  /* 소속이 바뀐 연사 — 저장된 명단이 옛 값을 그대로 들고 있을 때만 새 값으로 바꿉니다.
+     편집 모드에서 직접 고쳐 둔 문구는 from과 다르므로 건드리지 않습니다. */
+  var ROSTER_CORRECTIONS = [
+    {version:8, name:"Prof Eon Yong Kim", from:"Andong National University · Department of K-Culture Contents", aff:"Gyeongkuk National University · Major of Fine Art"}
   ];
 
   function migrateState(value){
@@ -997,6 +1002,14 @@
           speakersChanged=true;
         });
       }
+      ROSTER_CORRECTIONS.forEach(function(correction){
+        if(correction.version<=savedRosterVersion) return;
+        migratedSpeakers=migratedSpeakers.map(function(speaker){
+          if(!speaker||speaker.name!==correction.name||speaker.aff!==correction.from) return speaker;
+          speakersChanged=true;
+          return Object.assign({},speaker,{aff:correction.aff});
+        });
+      });
       if(speakersChanged) next=Object.assign({},next,{speakers:migratedSpeakers});
     }
     if((value.rosterVersion||0)<ROSTER_VERSION) next=Object.assign({},next,{rosterVersion:ROSTER_VERSION});

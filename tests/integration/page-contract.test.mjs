@@ -274,7 +274,9 @@ test('overlays each institution logo in its own colours at twice the original st
   const plateRule = systemCss.match(/\.spk-face img\.spk-logo\.has-plate\s*\{[^}]*\}/s)?.[0] ?? ''
   assert.match(plateRule, /background:#fff/)
   assert.match(plateRule, /border-radius:50%/)
-  assert.match(plateRule, /padding:5%/)
+  // 흰 원의 지름은 인장의 지름과 같아야 합니다. 절대 배치된 요소의 % 여백은 자기 폭이 아니라
+  // 담고 있는 상자(.spk-face, 231px)의 폭으로 계산되므로, %로 준 여백은 의도보다 3.6배 커집니다.
+  assert.doesNotMatch(plateRule, /padding:\s*[\d.]+%/)
   assert.match(appScript, /s\.logoPlate\s*\?\s*" has-plate"\s*:\s*""/)
 
 

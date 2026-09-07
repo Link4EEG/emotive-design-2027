@@ -29,7 +29,7 @@ const jaehwanPortrait = await readFile(new URL('../../assets/human/jaehwan-kim.w
 const parkPortrait = await readFile(new URL('../../assets/human/jong-jin-park.webp', import.meta.url))
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = '578238a9f5af291795db89bc55f144a37d00993bb89612323a4f9ee55da6123d'
+const EXPECTED_CONTENT_HASH = '9ecc70f32733a53b9a2ceb2115ae73cf31b5ee652f88d36b09791c50999bbeef'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -58,19 +58,23 @@ test('presents the event consistently as Roundabout across metadata and editable
   assert.match(html, /data-edit="foot\.mid"[^>]*>[^<]*Book-linked Roundabout/)
 })
 
-test('publishes the four-day March 2027 event schedule consistently', () => {
-  assert.equal((staticMarkup.match(/22–25 MAR 2027/g) ?? []).length, 2)
-  assert.match(staticMarkup, /data-edit="count\.date"[^>]*>22–25 March 2027</)
+test('publishes the March 2027 dates and says which day the whole group meets', () => {
+  assert.equal((staticMarkup.match(/23–26 MAR 2027/g) ?? []).length, 2)
+  assert.match(staticMarkup, /data-edit="count\.date"[^>]*>23–26 March 2027</)
   assert.match(staticMarkup, /data-edit="about\.title"[^>]*>Four days, a decade of research on how space is felt\.</)
-  assert.match(staticMarkup, /data-edit="prog\.lead"[^>]*>A four-day proposal\./)
-  assert.doesNotMatch(staticMarkup, /A single day|A full-day proposal/)
-  assert.match(staticMarkup, /Countdown reference: 09:00 AEDT on 22 March/)
-  assert.match(appScript, /Date\.parse\("2027-03-22T09:00:00\+11:00"\)/)
+
+  // 넷째 날이 아니라 25일 하루가 전원이 모이는 날임을 날짜 옆과 프로그램 도입부에서 밝힙니다
+  assert.match(staticMarkup, /data-edit="prog\.lead"[^>]*>The whole group meets on 25 March\./)
+  assert.match(staticMarkup, /Countdown to 25 March, the one day everyone meets; the other days are individual meetings and small-group discussions\./)
+  assert.match(appScript, /Date\.parse\("2027-03-25T09:00:00\+11:00"\)/)
+
+  // 지나간 표기가 남아 있지 않아야 합니다
+  assert.doesNotMatch(staticMarkup, /22–25|A single day|A full-day proposal|A four-day proposal/)
   assert.doesNotMatch(staticMarkup, /OCT 2027|1 October 2027/)
   assert.doesNotMatch(appScript, /new Date\(2027,/)
 })
 
-test('migrates legacy saved event labels without mutating other saved edits', () => {
+test('migrates every past generation of saved event labels without touching other edits', () => {
   const script = extractInlineScript(html)
   const defaultsSource = script.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const migrationSource = script.match(/function migrateState\(value\)\{[\s\S]*?\n  \}(?=\n\n  var state)/)?.[0] ?? ''
@@ -78,47 +82,69 @@ test('migrates legacy saved event labels without mutating other saved edits', ()
   const additionsSource = script.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const correctionsSource = script.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const currentRosterVersion = Number(versionSource.match(/\d+/)?.[0])
-  const input = {
-    rosterVersion: currentRosterVersion,
-    text: {
-      hero: 'An international symposium and book launch',
-      plural: 'Prior symposia references',
-      custom: 'Keep this custom edit',
-      'hero.i1': 'OCT 2027',
-      'count.date': '1 October 2027',
-      'fin.c1': 'OCT 2027',
-      'count.place': 'Venue to be confirmed — Sydney or Seoul, hybrid format planned.',
-      'about.title': 'A single day, a decade of research on how space is felt.',
-      'prog.lead': 'A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
+
+  const GENERATIONS = [
+    {
+      label: 'the October one-day billing',
+      text: {
+        'hero.i1': 'OCT 2027',
+        'count.date': '1 October 2027',
+        'fin.c1': 'OCT 2027',
+        'count.place': 'Venue to be confirmed — Sydney or Seoul, hybrid format planned.',
+        'about.title': 'A single day, a decade of research on how space is felt.',
+        'prog.lead': 'A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
+      }
     },
-    videos: { clip0: 'assets/hero-wave-brain.mp4', film1: 'custom-film.mp4' },
-    speakers: [{ name: 'Custom Speaker' }]
+    {
+      label: 'the 22-25 March billing',
+      text: {
+        'hero.i1': '22–25 MAR 2027',
+        'count.date': '22–25 March 2027',
+        'fin.c1': '22–25 MAR 2027',
+        'count.place': 'Countdown reference: 09:00 AEDT on 22 March. Venue to be confirmed — Sydney or Seoul, hybrid format planned.',
+        'about.title': 'Four days, a decade of research on how space is felt.',
+        'prog.lead': 'A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
+      }
+    }
+  ]
+
+  for (const generation of GENERATIONS) {
+    const input = {
+      rosterVersion: currentRosterVersion,
+      text: Object.assign({
+        hero: 'An international symposium and book launch',
+        plural: 'Prior symposia references',
+        custom: 'Keep this custom edit'
+      }, generation.text),
+      videos: { clip0: 'assets/hero-wave-brain.mp4', film1: 'custom-film.mp4' },
+      speakers: [{ name: 'Custom Speaker' }]
+    }
+    const context = { input }
+    new Script(`
+      var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
+      ${defaultsSource}
+      ${versionSource}
+      ${additionsSource}
+      ${correctionsSource}
+      ${migrationSource}
+      result=migrateState(input);
+    `).runInNewContext(context)
+
+    const where = `(${generation.label})`
+    assert.equal(context.result.text.hero, 'An international Roundabout and book launch', where)
+    assert.equal(context.result.text.plural, 'Prior Roundabout references', where)
+    assert.equal(context.result.text.custom, 'Keep this custom edit', where)
+    assert.equal(context.result.text['hero.i1'], '23–26 MAR 2027', where)
+    assert.equal(context.result.text['count.date'], '23–26 March 2027', where)
+    assert.equal(context.result.text['fin.c1'], '23–26 MAR 2027', where)
+    assert.match(context.result.text['count.place'], /^Countdown to 25 March, the one day everyone meets;/, where)
+    assert.equal(context.result.text['about.title'], 'Four days, a decade of research on how space is felt.', where)
+    assert.match(context.result.text['prog.lead'], /^The whole group meets on 25 March\./, where)
+    assert.equal(context.result.videos.clip0, 'assets/hero-video.mp4', where)
+    assert.equal(context.result.videos.film1, 'custom-film.mp4', where)
+    assert.equal(context.result.speakers, input.speakers, where)
+    assert.equal(input.text.hero, 'An international symposium and book launch', where)
   }
-
-  const context = { input }
-  new Script(`
-    var DEFAULT_VIDEOS={clip0:'assets/hero-video.mp4'};
-    ${defaultsSource}
-    ${versionSource}
-    ${additionsSource}
-    ${correctionsSource}
-    ${migrationSource}
-    result=migrateState(input);
-  `).runInNewContext(context)
-
-  assert.equal(context.result.text.hero, 'An international Roundabout and book launch')
-  assert.equal(context.result.text.plural, 'Prior Roundabout references')
-  assert.equal(context.result.text.custom, input.text.custom)
-  assert.equal(context.result.text['hero.i1'], '22–25 MAR 2027')
-  assert.equal(context.result.text['count.date'], '22–25 March 2027')
-  assert.equal(context.result.text['fin.c1'], '22–25 MAR 2027')
-  assert.match(context.result.text['count.place'], /^Countdown reference: 09:00 AEDT on 22 March\./)
-  assert.equal(context.result.text['about.title'], 'Four days, a decade of research on how space is felt.')
-  assert.match(context.result.text['prog.lead'], /^A four-day proposal\./)
-  assert.equal(context.result.videos.clip0, 'assets/hero-video.mp4')
-  assert.equal(context.result.videos.film1, input.videos.film1)
-  assert.equal(context.result.speakers, input.speakers)
-  assert.equal(input.text.hero, 'An international symposium and book launch')
 })
 
 test('preserves the complete section order and anchor structure', () => {

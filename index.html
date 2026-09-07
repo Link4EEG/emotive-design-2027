@@ -907,7 +907,7 @@
     {name:"Prof Yun Kyung Lee", role:"Discussant", aff:"Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab", color:"#171717", photo:"assets/human/yun-kyung-lee.webp", photoPosition:"50% 10%", logo:"assets/logo/jiangxi.webp"},
     {name:"Prof Jin Woo Lee", role:"Discussant", aff:"Yonsei University · Department of Urban Planning and Engineering", color:"#d52b1e", photo:"assets/human/jin-woo-lee.webp", photoPosition:"50% 40%", logo:"assets/logo/yonsei.webp"},
     {name:"Prof Eon Yong Kim", role:"Discussant", aff:"Gyeongkuk National University · K-Culture Contents", color:"#171717", photo:"assets/human/eon-yong-kim.webp", photoPosition:"50% 10%", logo:"assets/logo/gyeongkuk.webp"},
-    {name:"Daeil Song", role:"Discussant", aff:"MBC · Head Writer, Documentary", color:"#d52b1e", photo:"assets/human/daeil-song.webp", photoPosition:"50% 25%", logo:"assets/logo/mbc.webp"},
+    {name:"Daeil Song", role:"Discussant", aff:"MBC (Korean Public Broadcaster) · Head Writer, Documentary", color:"#d52b1e", photo:"assets/human/daeil-song.webp", photoPosition:"50% 25%", logo:"assets/logo/mbc.webp"},
     {name:"Prof Jong Jin Park", role:"Discussant", aff:"Kangnam University · Computational Design in Built Environment Lab.", color:"#171717", photo:"assets/human/jong-jin-park.webp", photoPosition:"50% 10%", logo:"assets/logo/kangnam.webp"},
     {name:"Prof Hyunkyu Shin", role:"Discussant", aff:"Mokwon University · Construction Management", color:"#d52b1e", photo:"assets/human/hyunkyu-shin.webp", photoPosition:"50% 10%", logo:"assets/logo/mokwon.webp"}
   ];
@@ -915,7 +915,7 @@
   /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.
      저장된 명단은 자기 판보다 나중에 확정된 연사만 한 번 이어받으므로,
      이미 본 뒤 직접 지운 연사는 다음 판에서도 되살아나지 않습니다. */
-  var ROSTER_VERSION = 13;
+  var ROSTER_VERSION = 14;
   var ROSTER_ADDITIONS = [
     {version:2, name:"Prof Kyung Ho Ko"},
     {version:3, name:"Prof Yeon Shim Chung"},
@@ -934,7 +934,8 @@
     {version:8, name:"Prof Eon Yong Kim", from:"Andong National University · Department of K-Culture Contents", aff:"Gyeongkuk National University · Major of Fine Art"},
     {version:11, name:"Prof Eon Yong Kim", from:"Gyeongkuk National University · Major of Fine Art", aff:"Gyeongkuk National University · Department of K-Culture Contents"},
     {version:12, name:"Prof Jong Jin Park", from:"Kangnam University", aff:"Kangnam University · Computational Design in Built Environment Lab."},
-    {version:13, name:"Prof Eon Yong Kim", from:"Gyeongkuk National University · Department of K-Culture Contents", aff:"Gyeongkuk National University · K-Culture Contents"}
+    {version:13, name:"Prof Eon Yong Kim", from:"Gyeongkuk National University · Department of K-Culture Contents", aff:"Gyeongkuk National University · K-Culture Contents"},
+    {version:14, name:"Daeil Song", from:"MBC · Head Writer, Documentary", aff:"MBC (Korean Public Broadcaster) · Head Writer, Documentary"}
   ];
 
   function migrateState(value){

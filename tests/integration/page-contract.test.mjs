@@ -171,7 +171,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%', logo: 'assets/logo/yonsei.webp' },
-    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Department of K-Culture Contents', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
+    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · K-Culture Contents', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
     { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: 'assets/logo/mbc.webp' },
     { name: 'Prof Jong Jin Park', role: 'Discussant', aff: 'Kangnam University · Computational Design in Built Environment Lab.', photo: 'assets/human/jong-jin-park.webp', photoPosition: '50% 10%', logo: 'assets/logo/kangnam.webp' },
     { name: 'Prof Hyunkyu Shin', role: 'Discussant', aff: 'Mokwon University · Construction Management', photo: 'assets/human/hyunkyu-shin.webp', photoPosition: '50% 10%', logo: 'assets/logo/mokwon.webp' }
@@ -469,7 +469,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
     ['Prof Luo Mi', 'assets/human/luo-mi.webp', 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab'],
     ['Prof Yun Kyung Lee', 'assets/human/yun-kyung-lee.webp', 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab'],
     ['Prof Jin Woo Lee', 'assets/human/jin-woo-lee.webp', 'Yonsei University · Department of Urban Planning and Engineering'],
-    ['Prof Eon Yong Kim', 'assets/human/eon-yong-kim.webp', 'Gyeongkuk National University · Department of K-Culture Contents'],
+    ['Prof Eon Yong Kim', 'assets/human/eon-yong-kim.webp', 'Gyeongkuk National University · K-Culture Contents'],
     ['Daeil Song', 'assets/human/daeil-song.webp', 'MBC · Head Writer, Documentary'],
     ['Prof Jong Jin Park', 'assets/human/jong-jin-park.webp', 'Kangnam University · Computational Design in Built Environment Lab.'],
     ['Prof Hyunkyu Shin', 'assets/human/hyunkyu-shin.webp', 'Mokwon University · Construction Management']

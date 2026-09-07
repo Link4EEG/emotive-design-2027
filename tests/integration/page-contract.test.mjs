@@ -174,7 +174,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · K-Culture Contents', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
     { name: 'Daeil Song', role: 'Discussant', aff: 'MBC (Korean Public Broadcaster) · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: 'assets/logo/mbc.webp' },
     { name: 'Prof Jong Jin Park', role: 'Discussant', aff: 'Kangnam University · Computational Design in Built Environment Lab.', photo: 'assets/human/jong-jin-park.webp', photoPosition: '50% 10%', logo: 'assets/logo/kangnam.webp' },
-    { name: 'Prof Hyunkyu Shin', role: 'Discussant', aff: 'Mokwon University · Construction Management', photo: 'assets/human/hyunkyu-shin.webp', photoPosition: '50% 10%', logo: 'assets/logo/mokwon.webp' }
+    { name: 'Prof Hyunkyu Shin', role: 'Discussant', aff: 'Mokwon University · AI Digital Fabrication', photo: 'assets/human/hyunkyu-shin.webp', photoPosition: '50% 10%', logo: 'assets/logo/mokwon.webp' }
   ])
 })
 
@@ -472,7 +472,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
     ['Prof Eon Yong Kim', 'assets/human/eon-yong-kim.webp', 'Gyeongkuk National University · K-Culture Contents'],
     ['Daeil Song', 'assets/human/daeil-song.webp', 'MBC (Korean Public Broadcaster) · Head Writer, Documentary'],
     ['Prof Jong Jin Park', 'assets/human/jong-jin-park.webp', 'Kangnam University · Computational Design in Built Environment Lab.'],
-    ['Prof Hyunkyu Shin', 'assets/human/hyunkyu-shin.webp', 'Mokwon University · Construction Management']
+    ['Prof Hyunkyu Shin', 'assets/human/hyunkyu-shin.webp', 'Mokwon University · AI Digital Fabrication']
   ]) {
     assert.equal(byName[name].photo, photo, `${name}: photo`)
     assert.ok(byName[name].logo === undefined || typeof byName[name].logo === 'string', `${name}: logo type`)

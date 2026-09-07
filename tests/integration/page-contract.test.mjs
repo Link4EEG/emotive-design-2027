@@ -171,7 +171,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Yun Kyung Lee', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab', photo: 'assets/human/yun-kyung-lee.webp', photoPosition: '50% 10%', logo: 'assets/logo/jiangxi.webp' },
     { name: 'Prof Jin Woo Lee', role: 'Discussant', aff: 'Yonsei University · Department of Urban Planning and Engineering', photo: 'assets/human/jin-woo-lee.webp', photoPosition: '50% 40%', logo: 'assets/logo/yonsei.webp' },
-    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Major of Fine Art', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
+    { name: 'Prof Eon Yong Kim', role: 'Discussant', aff: 'Gyeongkuk National University · Department of K-Culture Contents', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%', logo: 'assets/logo/gyeongkuk.webp' },
     { name: 'Daeil Song', role: 'Discussant', aff: 'MBC · Head Writer, Documentary', photo: 'assets/human/daeil-song.webp', photoPosition: '50% 25%', logo: 'assets/logo/mbc.webp' },
     { name: 'Prof Jong Jin Park', role: 'Discussant', aff: 'Kangnam University', photo: 'assets/human/jong-jin-park.webp', photoPosition: '50% 10%', logo: 'assets/logo/kangnam.webp' },
     { name: 'Prof Hyunkyu Shin', role: 'Discussant', aff: 'Mokwon University · Construction Management', photo: 'assets/human/hyunkyu-shin.webp', photoPosition: '50% 10%', logo: 'assets/logo/mokwon.webp' }
@@ -469,7 +469,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
     ['Prof Luo Mi', 'assets/human/luo-mi.webp', 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab'],
     ['Prof Yun Kyung Lee', 'assets/human/yun-kyung-lee.webp', 'Jiangxi Institute of Fashion Technology · Head, AI Manufacturing Lab'],
     ['Prof Jin Woo Lee', 'assets/human/jin-woo-lee.webp', 'Yonsei University · Department of Urban Planning and Engineering'],
-    ['Prof Eon Yong Kim', 'assets/human/eon-yong-kim.webp', 'Gyeongkuk National University · Major of Fine Art'],
+    ['Prof Eon Yong Kim', 'assets/human/eon-yong-kim.webp', 'Gyeongkuk National University · Department of K-Culture Contents'],
     ['Daeil Song', 'assets/human/daeil-song.webp', 'MBC · Head Writer, Documentary'],
     ['Prof Jong Jin Park', 'assets/human/jong-jin-park.webp', 'Kangnam University'],
     ['Prof Hyunkyu Shin', 'assets/human/hyunkyu-shin.webp', 'Mokwon University · Construction Management']
@@ -509,7 +509,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   ])
 })
 
-test('corrects a stale affiliation in a saved roster without touching custom edits', () => {
+test('applies every affiliation correction to a saved roster and leaves custom edits alone', () => {
   const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
   const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
@@ -529,28 +529,39 @@ test('corrects a stale affiliation in a saved roster without touching custom edi
     new Script(`${preamble}result=migrateState(input);`).runInNewContext(context)
     return context.result
   }
-  // 정정 규칙 자체의 판 번호를 읽습니다. 판이 다른 이유로 올라가도 이 검증은 그대로 성립합니다.
-  const correctionVersion = Math.max(...[...corrections.matchAll(/version:(\d+)/g)].map((m) => Number(m[1])))
-  const saved = (aff) => ({
-    rosterVersion: correctionVersion - 1,
-    text: {},
-    videos: {},
-    speakers: [{ name: 'Prof Eon Yong Kim', role: 'Discussant', aff, color: '#d52b1e', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' }]
+  const rulesCtx = {}
+  new Script(`${corrections};result=ROSTER_CORRECTIONS;`).runInNewContext(rulesCtx)
+  const rules = JSON.parse(JSON.stringify(rulesCtx.result))
+  assert.ok(rules.length > 0, 'there should be at least one affiliation correction to exercise')
+
+  const saved = (name, aff, rosterVersion) => ({
+    rosterVersion, text: {}, videos: {},
+    speakers: [{ name, role: 'Discussant', aff, color: '#d52b1e', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' }]
   })
 
-  // 옛 소속을 그대로 들고 있으면 정정합니다
-  const stale = saved('Andong National University · Department of K-Culture Contents')
-  const staleOriginal = JSON.parse(JSON.stringify(stale))
-  const corrected = migrate(stale)
-  assert.equal(corrected.speakers[0].aff, 'Gyeongkuk National University · Major of Fine Art')
-  assert.equal(corrected.rosterVersion, currentRosterVersion)
-  assert.deepEqual(stale, staleOriginal)
+  for (const rule of rules) {
+    // 자기 판보다 낮은 저장본이 옛 문구를 그대로 들고 있으면 새 문구로 바뀝니다
+    const stale = saved(rule.name, rule.from, rule.version - 1)
+    const original = JSON.parse(JSON.stringify(stale))
+    const corrected = migrate(stale)
+    const entry = corrected.speakers.find((speaker) => speaker.name === rule.name)
+    assert.notEqual(entry.aff, rule.from, `${rule.name}: stale affiliation survived correction ${rule.version}`)
+    assert.equal(corrected.rosterVersion, currentRosterVersion)
+    assert.deepEqual(stale, original, 'migration must not mutate its input')
 
-  // 다시 이주해도 그대로입니다
-  assert.equal(migrate(JSON.parse(JSON.stringify(corrected))).speakers[0].aff, 'Gyeongkuk National University · Major of Fine Art')
+    // 직접 고쳐 둔 문구는 어떤 정정도 건드리지 않습니다
+    const custom = migrate(saved(rule.name, 'My own wording', rule.version - 1))
+    assert.equal(custom.speakers.find((speaker) => speaker.name === rule.name).aff, 'My own wording')
+  }
 
-  // 편집 모드에서 직접 고쳐 둔 소속은 건드리지 않습니다
-  assert.equal(migrate(saved('My own wording')).speakers[0].aff, 'My own wording')
+  // 가장 오래된 문구도 정정이 이어 적용되어 현재 값까지 도달합니다
+  const oldest = rules[0]
+  const defaultsCtx = {}
+  new Script(`${defaults};result=DEFAULT_SPEAKERS;`).runInNewContext(defaultsCtx)
+  const current = JSON.parse(JSON.stringify(defaultsCtx.result)).find((speaker) => speaker.name === oldest.name)
+  const chained = migrate(saved(oldest.name, oldest.from, oldest.version - 1))
+  assert.equal(chained.speakers.find((speaker) => speaker.name === oldest.name).aff, current.aff,
+    'chained corrections should land on the affiliation the roster ships today')
 })
 
 test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {

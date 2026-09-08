@@ -192,7 +192,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%', logo: 'assets/logo/unsw.webp' },
     { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%', logo: 'assets/logo/unsw.webp' },
     { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%', logo: 'assets/logo/hanyang.webp' },
-    { name: 'Prof Mi Jeong Kim', role: 'Discussant', aff: 'Hanyang University', photo: 'assets/human/mi-jeong-kim.webp', photoPosition: '50% 30%', logo: 'assets/logo/hanyang.webp' },
+    { name: 'Prof Mi Jeong Kim', role: 'Discussant', aff: 'Hanyang University · Sensing Space', photo: 'assets/human/mi-jeong-kim.webp', photoPosition: '50% 30%', logo: 'assets/logo/hanyang.webp' },
     { name: 'Jaehwan Kim', role: 'Discussant', aff: 'LG AI Research · Product Manager, Product Innovation Team', photo: 'assets/human/jaehwan-kim.webp', photoPosition: '50% 15%', logo: 'assets/logo/lg.webp' },
     { name: 'Prof Kyung Ho Ko', role: 'Discussant', aff: 'Hongik University · Department of Sculpture', photo: 'assets/human/kyung-ho-ko.webp', photoPosition: '50% 30%', logo: 'assets/logo/hongik.webp' },
     { name: 'Prof Yeon Shim Chung', role: 'Discussant', aff: 'Hongik University · Department of Art History and Theory', photo: 'assets/human/yeon-shim-chung.webp', photoPosition: '50% 12%', logo: 'assets/logo/hongik.webp' },
@@ -509,7 +509,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   // 이어받은 연사는 기본 명단의 사진·소속을 그대로 가져옵니다 (이름으로 확인해 순서 변경에 견딤)
   const byName = Object.fromEntries(migrated.speakers.map((speaker) => [speaker.name, speaker]))
   for (const [name, photo, aff] of [
-    ['Prof Mi Jeong Kim', 'assets/human/mi-jeong-kim.webp', 'Hanyang University'],
+    ['Prof Mi Jeong Kim', 'assets/human/mi-jeong-kim.webp', 'Hanyang University · Sensing Space'],
     ['Jaehwan Kim', 'assets/human/jaehwan-kim.webp', 'LG AI Research · Product Manager, Product Innovation Team'],
     ['Prof Kyung Ho Ko', 'assets/human/kyung-ho-ko.webp', 'Hongik University · Department of Sculpture'],
     ['Prof Yeon Shim Chung', 'assets/human/yeon-shim-chung.webp', 'Hongik University · Department of Art History and Theory'],

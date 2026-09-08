@@ -900,7 +900,7 @@
     {name:"A/Prof Ju Hyun Lee", role:"Keynote · Author", aff:"UNSW Sydney · Scientia Academic", color:"#d52b1e", photo:"assets/human/ju-hyun-lee.webp", photoPosition:"50% 42%", logo:"assets/logo/unsw.webp"},
     {name:"Prof Michael J. Ostwald", role:"Discussant", aff:"UNSW Sydney", color:"#171717", photo:"assets/human/michael-ostwald.webp", photoPosition:"50% 44%", logo:"assets/logo/unsw.webp"},
     {name:"Prof Hanjong Jun", role:"Discussant", aff:"Hanyang University · School of Architecture", color:"#d52b1e", photo:"assets/human/hanjong-jun.webp", photoPosition:"50% 38%", logo:"assets/logo/hanyang.webp"},
-    {name:"Prof Mi Jeong Kim", role:"Discussant", aff:"Hanyang University", color:"#171717", photo:"assets/human/mi-jeong-kim.webp", photoPosition:"50% 30%", logo:"assets/logo/hanyang.webp"},
+    {name:"Prof Mi Jeong Kim", role:"Discussant", aff:"Hanyang University · Sensing Space", color:"#171717", photo:"assets/human/mi-jeong-kim.webp", photoPosition:"50% 30%", logo:"assets/logo/hanyang.webp"},
     {name:"Jaehwan Kim", role:"Discussant", aff:"LG AI Research · Product Manager, Product Innovation Team", color:"#d52b1e", photo:"assets/human/jaehwan-kim.webp", photoPosition:"50% 15%", logo:"assets/logo/lg.webp"},
     {name:"Prof Kyung Ho Ko", role:"Discussant", aff:"Hongik University · Department of Sculpture", color:"#171717", photo:"assets/human/kyung-ho-ko.webp", photoPosition:"50% 30%", logo:"assets/logo/hongik.webp"},
     {name:"Prof Yeon Shim Chung", role:"Discussant", aff:"Hongik University · Department of Art History and Theory", color:"#d52b1e", photo:"assets/human/yeon-shim-chung.webp", photoPosition:"50% 12%", logo:"assets/logo/hongik.webp"},
@@ -916,7 +916,7 @@
   /* 명단 판 번호 — 새 연사를 확정할 때마다 1 올리고, 그 판 번호와 이름을 ROSTER_ADDITIONS에 적습니다.
      저장된 명단은 자기 판보다 나중에 확정된 연사만 한 번 이어받으므로,
      이미 본 뒤 직접 지운 연사는 다음 판에서도 되살아나지 않습니다. */
-  var ROSTER_VERSION = 16;
+  var ROSTER_VERSION = 17;
   var ROSTER_ADDITIONS = [
     {version:2, name:"Prof Kyung Ho Ko"},
     {version:3, name:"Prof Yeon Shim Chung"},
@@ -938,7 +938,8 @@
     {version:12, name:"Prof Jong Jin Park", from:"Kangnam University", aff:"Kangnam University · Computational Design in Built Environment Lab."},
     {version:13, name:"Prof Eon Yong Kim", from:"Gyeongkuk National University · Department of K-Culture Contents", aff:"Gyeongkuk National University · K-Culture Contents"},
     {version:14, name:"Daeil Song", from:"MBC · Head Writer, Documentary", aff:"MBC (Korean Public Broadcaster) · Head Writer, Documentary"},
-    {version:15, name:"Prof Hyunkyu Shin", from:"Mokwon University · Construction Management", aff:"Mokwon University · AI Digital Fabrication"}
+    {version:15, name:"Prof Hyunkyu Shin", from:"Mokwon University · Construction Management", aff:"Mokwon University · AI Digital Fabrication"},
+    {version:17, name:"Prof Mi Jeong Kim", from:"Hanyang University", aff:"Hanyang University · Sensing Space"}
   ];
 
   function migrateState(value){

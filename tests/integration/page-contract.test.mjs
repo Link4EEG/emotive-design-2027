@@ -27,6 +27,7 @@ const jinWooPortrait = await readFile(new URL('../../assets/human/jin-woo-lee.we
 const eonYongPortrait = await readFile(new URL('../../assets/human/eon-yong-kim.webp', import.meta.url))
 const jaehwanPortrait = await readFile(new URL('../../assets/human/jaehwan-kim.webp', import.meta.url))
 const parkPortrait = await readFile(new URL('../../assets/human/jong-jin-park.webp', import.meta.url))
+const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.webp', import.meta.url))
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 
 const EXPECTED_CONTENT_HASH = '9ecc70f32733a53b9a2ceb2115ae73cf31b5ee652f88d36b09791c50999bbeef'
@@ -162,7 +163,7 @@ test('preserves all 101 editable content bindings', () => {
 })
 
 test('preserves runtime content, media, registration, and editor storage contracts', () => {
-  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Jaehwan Kim', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin']) {
+  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Prof Mi Jeong Kim', 'Jaehwan Kim', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin']) {
     assert.ok(html.includes(speaker), `missing speaker: ${speaker}`)
   }
   assert.doesNotMatch(html, /Prof Mijeong Kim|Hoon Han|hoon-han/)
@@ -191,6 +192,7 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'A/Prof Ju Hyun Lee', role: 'Keynote · Author', aff: 'UNSW Sydney · Scientia Academic', photo: 'assets/human/ju-hyun-lee.webp', photoPosition: '50% 42%', logo: 'assets/logo/unsw.webp' },
     { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%', logo: 'assets/logo/unsw.webp' },
     { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%', logo: 'assets/logo/hanyang.webp' },
+    { name: 'Prof Mi Jeong Kim', role: 'Discussant', aff: 'Hanyang University', photo: 'assets/human/mi-jeong-kim.webp', photoPosition: '50% 30%', logo: 'assets/logo/hanyang.webp' },
     { name: 'Jaehwan Kim', role: 'Discussant', aff: 'LG AI Research · Product Manager, Product Innovation Team', photo: 'assets/human/jaehwan-kim.webp', photoPosition: '50% 15%', logo: 'assets/logo/lg.webp' },
     { name: 'Prof Kyung Ho Ko', role: 'Discussant', aff: 'Hongik University · Department of Sculpture', photo: 'assets/human/kyung-ho-ko.webp', photoPosition: '50% 30%', logo: 'assets/logo/hongik.webp' },
     { name: 'Prof Yeon Shim Chung', role: 'Discussant', aff: 'Hongik University · Department of Art History and Theory', photo: 'assets/human/yeon-shim-chung.webp', photoPosition: '50% 12%', logo: 'assets/logo/hongik.webp' },
@@ -353,6 +355,16 @@ test('ships the approved metadata-free Jong Jin Park and Hyunkyu Shin portraits'
   }
 })
 
+test('ships the Mi Jeong Kim portrait stripped of metadata without re-encoding', () => {
+  const approvedPortraitHash = '29321c291d7715acb523aeacabf5076b08999205284594ab033f0b0bd055b5d2'
+  assert.equal(sha256(miJeongPortrait), approvedPortraitHash)
+  assert.equal(miJeongPortrait.subarray(0, 4).toString(), 'RIFF')
+  assert.equal(miJeongPortrait.subarray(8, 12).toString(), 'WEBP')
+  for (const chunk of ['EXIF', 'XMP ', 'ICCP']) {
+    assert.ok(!miJeongPortrait.includes(Buffer.from(chunk)), `portrait still carries ${chunk.trim()}`)
+  }
+})
+
 test('reproduces the Vercel Ship speaker grid: dark framed section, mono captions, four-up portraits', () => {
   // 마크업 — 검은 띠 안의 프레임 섹션, 연사는 4열 그리드 목록
   assert.match(html, /<div class="band band-dark">\s*<section id="people" class="wrap reveal">/)
@@ -433,11 +445,14 @@ test('immutably migrates the legacy speaker roster while preserving custom parti
     result=migrateState(input);
   `).runInNewContext(context)
 
-  assert.deepEqual(Array.from(context.result.speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Jaehwan Kim',
-    'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song',
-    'Prof Jong Jin Park', 'Prof Hyunkyu Shin', 'Custom Participant'
-  ])
+  // 순서를 손으로 적는 대신, 확정 연사는 기본 명단 순서를 지키고 직접 추가한 참가자는 뒤에 남는지 봅니다
+  const defaultsCtx = {}
+  new Script(`${defaults};result=DEFAULT_SPEAKERS.map(function(s){return s.name;});`).runInNewContext(defaultsCtx)
+  const defaultNames = Array.from(defaultsCtx.result)
+  const migratedNames = Array.from(context.result.speakers, (speaker) => speaker.name)
+  assert.deepEqual(migratedNames.filter((name) => defaultNames.includes(name)), defaultNames,
+    'confirmed speakers should keep the order the roster ships them in')
+  assert.deepEqual(migratedNames.filter((name) => !defaultNames.includes(name)), ['Custom Participant'])
   assert.equal(context.result.speakers[0].photo, 'assets/human/seung-yeul-ji.webp')
   assert.equal(context.result.speakers[1].photo, 'custom-ju.jpg')
   assert.equal(context.result.speakers[2].photoPosition, '50% 44%')
@@ -483,12 +498,18 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   const staleOriginal = JSON.parse(JSON.stringify(stale))
   const migrated = migrate(stale)
 
-  assert.deepEqual(Array.from(migrated.speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Jaehwan Kim', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin'
-  ])
+  // 저장본에 이미 있던 사람 + 이후 확정된 사람이, 기본 명단 순서 그대로 모여야 합니다
+  const namesCtx = {}
+  new Script(`${defaults};${additions};result={defaults:DEFAULT_SPEAKERS.map(function(s){return s.name;}),added:ROSTER_ADDITIONS.map(function(a){return a.name;})};`).runInNewContext(namesCtx)
+  const defaultNames = Array.from(namesCtx.result.defaults)
+  const addedNames = Array.from(namesCtx.result.added)
+  const savedNames = Array.from(savedRoster().speakers, (speaker) => speaker.name)
+  const expected = defaultNames.filter((name) => savedNames.includes(name) || addedNames.includes(name))
+  assert.deepEqual(Array.from(migrated.speakers, (speaker) => speaker.name), expected)
   // 이어받은 연사는 기본 명단의 사진·소속을 그대로 가져옵니다 (이름으로 확인해 순서 변경에 견딤)
   const byName = Object.fromEntries(migrated.speakers.map((speaker) => [speaker.name, speaker]))
   for (const [name, photo, aff] of [
+    ['Prof Mi Jeong Kim', 'assets/human/mi-jeong-kim.webp', 'Hanyang University'],
     ['Jaehwan Kim', 'assets/human/jaehwan-kim.webp', 'LG AI Research · Product Manager, Product Innovation Team'],
     ['Prof Kyung Ho Ko', 'assets/human/kyung-ho-ko.webp', 'Hongik University · Department of Sculpture'],
     ['Prof Yeon Shim Chung', 'assets/human/yeon-shim-chung.webp', 'Hongik University · Department of Art History and Theory'],
@@ -522,16 +543,16 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   })
   // 바로 앞사람(Hanjong Jun)이 남아 있으므로 그 뒤에 끼웁니다
   assert.deepEqual(Array.from(migrate(removedEarlier).speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin'
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Mi Jeong Kim'
   ])
 
   // 최신 판에서 지운 연사도 되살아나지 않습니다
   const removedAtCurrent = Object.assign({}, migrated, {
-    speakers: migrated.speakers.filter((speaker) => speaker.name !== 'Prof Hyunkyu Shin')
+    speakers: migrated.speakers.filter((speaker) => speaker.name !== 'Prof Mi Jeong Kim')
   })
   assert.deepEqual(Array.from(migrate(removedAtCurrent).speakers, (speaker) => speaker.name), [
     'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Jaehwan Kim', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi',
-    'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park'
+    'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin'
   ])
 })
 

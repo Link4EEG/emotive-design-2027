@@ -30,7 +30,7 @@ const parkPortrait = await readFile(new URL('../../assets/human/jong-jin-park.we
 const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.webp', import.meta.url))
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = '9ecc70f32733a53b9a2ceb2115ae73cf31b5ee652f88d36b09791c50999bbeef'
+const EXPECTED_CONTENT_HASH = '32e05f58cd4c5849b1bde33bffecec24574a2134c7be764d2cef11e3ed461941'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -75,6 +75,21 @@ test('publishes the March 2027 dates and says which day the whole group meets', 
   assert.doesNotMatch(appScript, /new Date\(2027,/)
 })
 
+test('names Hanyang University Seoul Campus as the venue and drops Sydney as a location', () => {
+  assert.match(staticMarkup, /data-edit="hero\.i3"[^>]*>Hanyang University</)
+  assert.match(staticMarkup, /data-edit="hero\.i4"[^>]*>Seoul Campus</)
+  assert.match(staticMarkup, /data-edit="fin\.c3"[^>]*>Hanyang University, Seoul</)
+  assert.match(staticMarkup, /Hanyang University, Seoul Campus — hybrid format planned\./)
+
+  // 장소로 쓰이던 표기는 본문에서 사라져야 합니다
+  assert.doesNotMatch(staticMarkup, /Sydney \/ Seoul|Sydney or Seoul|Venue TBC|Venue to be confirmed/)
+
+  // 다만 연사 소속의 UNSW Sydney 는 장소가 아니므로 그대로 남아야 합니다
+  assert.match(appScript, /aff:"UNSW Sydney"/)
+  assert.match(appScript, /aff:"UNSW Sydney · Scientia Academic"/)
+  assert.match(appScript, /Visiting Senior Fellow, UNSW Sydney/)
+})
+
 test('migrates every past generation of saved event labels without touching other edits', () => {
   const script = extractInlineScript(html)
   const defaultsSource = script.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
@@ -92,6 +107,9 @@ test('migrates every past generation of saved event labels without touching othe
         'count.date': '1 October 2027',
         'fin.c1': 'OCT 2027',
         'count.place': 'Venue to be confirmed — Sydney or Seoul, hybrid format planned.',
+        'hero.i3': 'Sydney / Seoul',
+        'hero.i4': 'Venue TBC',
+        'fin.c3': 'Sydney / Seoul',
         'about.title': 'A single day, a decade of research on how space is felt.',
         'prog.lead': 'A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
       }
@@ -103,6 +121,9 @@ test('migrates every past generation of saved event labels without touching othe
         'count.date': '22–25 March 2027',
         'fin.c1': '22–25 MAR 2027',
         'count.place': 'Countdown reference: 09:00 AEDT on 22 March. Venue to be confirmed — Sydney or Seoul, hybrid format planned.',
+        'hero.i3': 'Sydney / Seoul',
+        'hero.i4': 'Venue TBC',
+        'fin.c3': 'Sydney / Seoul',
         'about.title': 'Four days, a decade of research on how space is felt.',
         'prog.lead': 'A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
       }
@@ -139,6 +160,10 @@ test('migrates every past generation of saved event labels without touching othe
     assert.equal(context.result.text['count.date'], '23–26 March 2027', where)
     assert.equal(context.result.text['fin.c1'], '23–26 MAR 2027', where)
     assert.match(context.result.text['count.place'], /^Countdown to 25 March, the one day everyone meets;/, where)
+    assert.match(context.result.text['count.place'], /Hanyang University, Seoul Campus — hybrid format planned\.$/, where)
+    assert.equal(context.result.text['hero.i3'], 'Hanyang University', where)
+    assert.equal(context.result.text['hero.i4'], 'Seoul Campus', where)
+    assert.equal(context.result.text['fin.c3'], 'Hanyang University, Seoul', where)
     assert.equal(context.result.text['about.title'], 'Four days, a decade of research on how space is felt.', where)
     assert.match(context.result.text['prog.lead'], /^The whole group meets on 25 March\./, where)
     assert.equal(context.result.videos.clip0, 'assets/hero-video.mp4', where)

@@ -29,8 +29,9 @@ const jaehwanPortrait = await readFile(new URL('../../assets/human/jaehwan-kim.w
 const parkPortrait = await readFile(new URL('../../assets/human/jong-jin-park.webp', import.meta.url))
 const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.webp', import.meta.url))
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
+const baoLiangPortrait = await readFile(new URL('../../assets/human/bao-liang-lu.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = '32e05f58cd4c5849b1bde33bffecec24574a2134c7be764d2cef11e3ed461941'
+const EXPECTED_CONTENT_HASH = '20ff1ce82e4dbc644cc0d6652fd235c57bb13b345608b4a05806849d5e3433b9'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -90,6 +91,20 @@ test('names Hanyang University Seoul Campus as the venue and drops Sydney as a l
   assert.match(appScript, /Visiting Senior Fellow, UNSW Sydney/)
 })
 
+test('credits the invited keynote speakers alongside the book authors', () => {
+  // 연사 카드에 초청 기조연설자가 있으므로, 안내 문구가 "두 저자만 기조연설" 이라고 말하면 안 됩니다
+  assert.doesNotMatch(staticMarkup, /deliver the keynotes and (?:all )?three thematic sessions/)
+  assert.doesNotMatch(staticMarkup, /The keynotes and thematic sessions are led by the book's two co-authors/)
+  assert.match(staticMarkup, /data-edit="prog\.lead">The whole group meets on 25 March\. The two book authors and invited speakers deliver the keynotes;/)
+  assert.match(staticMarkup, /data-edit="ppl\.lead">The book's two co-authors and invited speakers deliver the keynotes;/)
+  assert.match(staticMarkup, /data-edit="val\.1\.p">The book's two co-authors deliver keynotes and all three thematic sessions/)
+
+  const declaration = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+  const context = {}
+  new Script(`${declaration};result=DEFAULT_SPEAKERS.filter(function(s){return /^Keynote/.test(s.role);}).map(function(s){return s.name;});`).runInNewContext(context)
+  assert.deepEqual(Array.from(context.result), ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Jaehwan Kim', 'Prof Bao-Liang Lu'])
+})
+
 test('migrates every past generation of saved event labels without touching other edits', () => {
   const script = extractInlineScript(html)
   const defaultsSource = script.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
@@ -98,6 +113,13 @@ test('migrates every past generation of saved event labels without touching othe
   const additionsSource = script.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const correctionsSource = script.match(/var ROSTER_CORRECTIONS = \[[\s\S]*?\];/)?.[0] ?? ''
   const currentRosterVersion = Number(versionSource.match(/\d+/)?.[0])
+
+  // 초청 기조연설자가 생긴 뒤의 문구: 두 저자만 기조연설을 한다고 말하지 않습니다
+  const INVITED_KEYNOTE_COPY = {
+    'prog.lead': 'The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.',
+    'ppl.lead': "The book's two co-authors and invited speakers deliver the keynotes; the authors lead the thematic sessions, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.",
+    'val.1.p': "The book's two co-authors deliver keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand."
+  }
 
   const GENERATIONS = [
     {
@@ -126,6 +148,22 @@ test('migrates every past generation of saved event labels without touching othe
         'fin.c3': 'Sydney / Seoul',
         'about.title': 'Four days, a decade of research on how space is felt.',
         'prog.lead': 'A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.'
+      }
+    },
+    {
+      label: 'the Seoul Campus billing before the invited keynotes',
+      text: {
+        'hero.i1': '23–26 MAR 2027',
+        'count.date': '23–26 March 2027',
+        'fin.c1': '23–26 MAR 2027',
+        'count.place': 'Countdown to 25 March, the one day everyone meets; the other days are individual meetings and small-group discussions. Hanyang University, Seoul Campus — hybrid format planned.',
+        'hero.i3': 'Hanyang University',
+        'hero.i4': 'Seoul Campus',
+        'fin.c3': 'Hanyang University, Seoul',
+        'about.title': 'Four days, a decade of research on how space is felt.',
+        'prog.lead': 'The whole group meets on 25 March. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.',
+        'ppl.lead': "The keynotes and thematic sessions are led by the book's two co-authors, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.",
+        'val.1.p': "The book's two co-authors deliver the keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand."
       }
     }
   ]
@@ -166,6 +204,9 @@ test('migrates every past generation of saved event labels without touching othe
     assert.equal(context.result.text['fin.c3'], 'Hanyang University, Seoul', where)
     assert.equal(context.result.text['about.title'], 'Four days, a decade of research on how space is felt.', where)
     assert.match(context.result.text['prog.lead'], /^The whole group meets on 25 March\./, where)
+    for (const [key, value] of Object.entries(INVITED_KEYNOTE_COPY)) {
+      if (key in generation.text) assert.equal(context.result.text[key], value, `${key} ${where}`)
+    }
     assert.equal(context.result.videos.clip0, 'assets/hero-video.mp4', where)
     assert.equal(context.result.videos.film1, 'custom-film.mp4', where)
     assert.equal(context.result.speakers, input.speakers, where)
@@ -188,7 +229,7 @@ test('preserves all 101 editable content bindings', () => {
 })
 
 test('preserves runtime content, media, registration, and editor storage contracts', () => {
-  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Prof Mi Jeong Kim', 'Jaehwan Kim', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin']) {
+  for (const speaker of ['Dr Seung Yeul Ji', 'A/Prof Ju Hyun Lee', 'Prof Michael J. Ostwald', 'Prof Hanjong Jun', 'Prof Mi Jeong Kim', 'Jaehwan Kim', 'Prof Bao-Liang Lu', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi', 'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin']) {
     assert.ok(html.includes(speaker), `missing speaker: ${speaker}`)
   }
   assert.doesNotMatch(html, /Prof Mijeong Kim|Hoon Han|hoon-han/)
@@ -218,7 +259,8 @@ test('defines the confirmed speakers with web-safe portraits and individual crop
     { name: 'Prof Michael J. Ostwald', role: 'Discussant', aff: 'UNSW Sydney', photo: 'assets/human/michael-ostwald.webp', photoPosition: '50% 44%', logo: 'assets/logo/unsw.webp' },
     { name: 'Prof Hanjong Jun', role: 'Discussant', aff: 'Hanyang University · School of Architecture', photo: 'assets/human/hanjong-jun.webp', photoPosition: '50% 38%', logo: 'assets/logo/hanyang.webp' },
     { name: 'Prof Mi Jeong Kim', role: 'Discussant', aff: 'Hanyang University · Sensing Space', photo: 'assets/human/mi-jeong-kim.webp', photoPosition: '50% 30%', logo: 'assets/logo/hanyang.webp' },
-    { name: 'Jaehwan Kim', role: 'Discussant', aff: 'LG AI Research · Product Manager, Product Innovation Team', photo: 'assets/human/jaehwan-kim.webp', photoPosition: '50% 15%', logo: 'assets/logo/lg.webp' },
+    { name: 'Jaehwan Kim', role: 'Keynote', aff: 'LG AI Research · Product Manager, Product Innovation Team', photo: 'assets/human/jaehwan-kim.webp', photoPosition: '50% 15%', logo: 'assets/logo/lg.webp' },
+    { name: 'Prof Bao-Liang Lu', role: 'Keynote', aff: 'Shanghai Jiao Tong University · Director, Center for Brain-like Computing and Machine Intelligence', photo: 'assets/human/bao-liang-lu.webp', photoPosition: '50% 0%', logo: 'assets/logo/sjtu.webp' },
     { name: 'Prof Kyung Ho Ko', role: 'Discussant', aff: 'Hongik University · Department of Sculpture', photo: 'assets/human/kyung-ho-ko.webp', photoPosition: '50% 30%', logo: 'assets/logo/hongik.webp' },
     { name: 'Prof Yeon Shim Chung', role: 'Discussant', aff: 'Hongik University · Department of Art History and Theory', photo: 'assets/human/yeon-shim-chung.webp', photoPosition: '50% 12%', logo: 'assets/logo/hongik.webp' },
     { name: 'Prof Luo Mi', role: 'Discussant', aff: 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab', photo: 'assets/human/luo-mi.webp', photoPosition: '50% 0%', logo: 'assets/logo/jiangxi.webp' },
@@ -345,7 +387,8 @@ test('overlays each institution logo in its own colours at twice the original st
   assert.deepEqual(used.sort(), [
     'assets/logo/gyeongkuk.webp', 'assets/logo/hanyang.webp', 'assets/logo/hongik.webp',
     'assets/logo/jiangxi.webp', 'assets/logo/kangnam.webp', 'assets/logo/lg.webp',
-    'assets/logo/mbc.webp', 'assets/logo/mokwon.webp', 'assets/logo/unsw.webp', 'assets/logo/yonsei.webp'
+    'assets/logo/mbc.webp', 'assets/logo/mokwon.webp', 'assets/logo/sjtu.webp', 'assets/logo/unsw.webp',
+    'assets/logo/yonsei.webp'
   ])
 
   // 모든 연사가 소속 로고를 갖습니다. 로고 없이 연사를 추가하면 여기서 막힙니다.
@@ -387,6 +430,18 @@ test('ships the Mi Jeong Kim portrait stripped of metadata without re-encoding',
   assert.equal(miJeongPortrait.subarray(8, 12).toString(), 'WEBP')
   for (const chunk of ['EXIF', 'XMP ', 'ICCP']) {
     assert.ok(!miJeongPortrait.includes(Buffer.from(chunk)), `portrait still carries ${chunk.trim()}`)
+  }
+})
+
+test('ships the Bao-Liang Lu portrait losslessly and without metadata', () => {
+  // 원본이 170×226px로 작습니다. 손실 압축을 한 번 더 거치면 더 흐려지므로 무손실(VP8L) WebP로 옮깁니다.
+  const approvedPortraitHash = '5051f932584f969e3f99b9f39e3ee8cdd553138b585e0a13ebb4a186e99b4b4e'
+  assert.equal(sha256(baoLiangPortrait), approvedPortraitHash)
+  assert.equal(baoLiangPortrait.subarray(0, 4).toString(), 'RIFF')
+  assert.equal(baoLiangPortrait.subarray(8, 12).toString(), 'WEBP')
+  assert.equal(baoLiangPortrait.subarray(12, 16).toString(), 'VP8L', 'portrait should be stored losslessly')
+  for (const chunk of ['EXIF', 'XMP ', 'ICCP']) {
+    assert.ok(!baoLiangPortrait.includes(Buffer.from(chunk)), `portrait still carries ${chunk.trim()}`)
   }
 })
 
@@ -536,6 +591,7 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   for (const [name, photo, aff] of [
     ['Prof Mi Jeong Kim', 'assets/human/mi-jeong-kim.webp', 'Hanyang University · Sensing Space'],
     ['Jaehwan Kim', 'assets/human/jaehwan-kim.webp', 'LG AI Research · Product Manager, Product Innovation Team'],
+    ['Prof Bao-Liang Lu', 'assets/human/bao-liang-lu.webp', 'Shanghai Jiao Tong University · Director, Center for Brain-like Computing and Machine Intelligence'],
     ['Prof Kyung Ho Ko', 'assets/human/kyung-ho-ko.webp', 'Hongik University · Department of Sculpture'],
     ['Prof Yeon Shim Chung', 'assets/human/yeon-shim-chung.webp', 'Hongik University · Department of Art History and Theory'],
     ['Prof Luo Mi', 'assets/human/luo-mi.webp', 'Jiangxi Institute of Fashion Technology · Director, AI Manufacturing Lab'],
@@ -550,6 +606,9 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
     assert.ok(byName[name].logo === undefined || typeof byName[name].logo === 'string', `${name}: logo type`)
     assert.equal(byName[name].aff, aff, `${name}: affiliation`)
   }
+  // 두 초청 기조연설자는 이어받을 때부터 Keynote 역할을 가집니다
+  assert.equal(byName['Jaehwan Kim'].role, 'Keynote')
+  assert.equal(byName['Prof Bao-Liang Lu'].role, 'Keynote')
   assert.equal(migrated.rosterVersion, currentRosterVersion)
   assert.deepEqual(stale, staleOriginal)
 
@@ -562,13 +621,17 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
   )
 
   // 이미 본 판에서 직접 지운 연사는 다음 판 이주에서도 되살아나지 않습니다
-  const removedEarlier = Object.assign({}, migrated, {
+  const keepOnly = (...names) => Object.assign({}, migrated, {
     rosterVersion: newestAddition - 1,
-    speakers: migrated.speakers.filter((speaker) => speaker.name === 'Dr Seung Yeul Ji' || speaker.name === 'Prof Hanjong Jun')
+    speakers: migrated.speakers.filter((speaker) => names.includes(speaker.name))
   })
-  // 바로 앞사람(Hanjong Jun)이 남아 있으므로 그 뒤에 끼웁니다
-  assert.deepEqual(Array.from(migrate(removedEarlier).speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Mi Jeong Kim'
+  // 새 연사는 기본 명단에서 바로 앞사람(Jaehwan Kim) 뒤에 끼웁니다
+  assert.deepEqual(Array.from(migrate(keepOnly('Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Jaehwan Kim')).speakers, (speaker) => speaker.name), [
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Jaehwan Kim', 'Prof Bao-Liang Lu'
+  ])
+  // 바로 앞사람들이 지워졌다면 남아 있는 가장 가까운 앞사람(Hanjong Jun) 뒤에 끼웁니다
+  assert.deepEqual(Array.from(migrate(keepOnly('Dr Seung Yeul Ji', 'Prof Hanjong Jun')).speakers, (speaker) => speaker.name), [
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Prof Bao-Liang Lu'
   ])
 
   // 최신 판에서 지운 연사도 되살아나지 않습니다
@@ -576,12 +639,12 @@ test('adds each newly confirmed speaker to a saved roster once, per roster versi
     speakers: migrated.speakers.filter((speaker) => speaker.name !== 'Prof Mi Jeong Kim')
   })
   assert.deepEqual(Array.from(migrate(removedAtCurrent).speakers, (speaker) => speaker.name), [
-    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Jaehwan Kim', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi',
+    'Dr Seung Yeul Ji', 'Prof Hanjong Jun', 'Jaehwan Kim', 'Prof Bao-Liang Lu', 'Prof Kyung Ho Ko', 'Prof Yeon Shim Chung', 'Prof Luo Mi',
     'Prof Yun Kyung Lee', 'Prof Jin Woo Lee', 'Prof Eon Yong Kim', 'Daeil Song', 'Prof Jong Jin Park', 'Prof Hyunkyu Shin'
   ])
 })
 
-test('applies every affiliation correction to a saved roster and leaves custom edits alone', () => {
+test('applies every affiliation or role correction to a saved roster and leaves custom edits alone', () => {
   const defaults = appScript.match(/var DEFAULT_SPEAKERS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
   const version = appScript.match(/var ROSTER_VERSION = \d+;/)?.[0] ?? ''
   const additions = appScript.match(/var ROSTER_ADDITIONS = \[[\s\S]*?\];/)?.[0] ?? ''
@@ -604,36 +667,51 @@ test('applies every affiliation correction to a saved roster and leaves custom e
   const rulesCtx = {}
   new Script(`${corrections};result=ROSTER_CORRECTIONS;`).runInNewContext(rulesCtx)
   const rules = JSON.parse(JSON.stringify(rulesCtx.result))
-  assert.ok(rules.length > 0, 'there should be at least one affiliation correction to exercise')
+  assert.ok(rules.length > 0, 'there should be at least one roster correction to exercise')
+  // 정정은 소속(aff)과 역할(role)만 다룹니다. 사진·로고는 이름 기준 보충 규칙이 따로 맡습니다.
+  for (const rule of rules) assert.ok(['aff', 'role'].includes(rule.field), `${rule.name}: unsupported field ${rule.field}`)
 
-  const saved = (name, aff, rosterVersion) => ({
+  const saved = (rule, value, rosterVersion) => ({
     rosterVersion, text: {}, videos: {},
-    speakers: [{ name, role: 'Discussant', aff, color: '#d52b1e', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' }]
+    speakers: [Object.assign(
+      { name: rule.name, role: 'Discussant', aff: 'Some Institute', color: '#d52b1e', photo: 'assets/human/eon-yong-kim.webp', photoPosition: '50% 10%' },
+      { [rule.field]: value }
+    )]
   })
 
   for (const rule of rules) {
-    // 자기 판보다 낮은 저장본이 옛 문구를 그대로 들고 있으면 새 문구로 바뀝니다
-    const stale = saved(rule.name, rule.from, rule.version - 1)
+    // 자기 판보다 낮은 저장본이 옛 값을 그대로 들고 있으면 새 값으로 바뀝니다
+    const stale = saved(rule, rule.from, rule.version - 1)
     const original = JSON.parse(JSON.stringify(stale))
     const corrected = migrate(stale)
     const entry = corrected.speakers.find((speaker) => speaker.name === rule.name)
-    assert.notEqual(entry.aff, rule.from, `${rule.name}: stale affiliation survived correction ${rule.version}`)
+    assert.notEqual(entry[rule.field], rule.from, `${rule.name}: stale ${rule.field} survived correction ${rule.version}`)
     assert.equal(corrected.rosterVersion, currentRosterVersion)
     assert.deepEqual(stale, original, 'migration must not mutate its input')
 
-    // 직접 고쳐 둔 문구는 어떤 정정도 건드리지 않습니다
-    const custom = migrate(saved(rule.name, 'My own wording', rule.version - 1))
-    assert.equal(custom.speakers.find((speaker) => speaker.name === rule.name).aff, 'My own wording')
+    // 직접 고쳐 둔 값은 어떤 정정도 건드리지 않습니다
+    const custom = migrate(saved(rule, 'My own wording', rule.version - 1))
+    assert.equal(custom.speakers.find((speaker) => speaker.name === rule.name)[rule.field], 'My own wording')
   }
 
-  // 가장 오래된 문구도 정정이 이어 적용되어 현재 값까지 도달합니다
-  const oldest = rules[0]
+  // 같은 사람·같은 항목의 정정은 이어서 적용됩니다. 사슬의 첫 값에서 출발해도 지금 기본 명단의 값에 도달해야 합니다.
   const defaultsCtx = {}
   new Script(`${defaults};result=DEFAULT_SPEAKERS;`).runInNewContext(defaultsCtx)
-  const current = JSON.parse(JSON.stringify(defaultsCtx.result)).find((speaker) => speaker.name === oldest.name)
-  const chained = migrate(saved(oldest.name, oldest.from, oldest.version - 1))
-  assert.equal(chained.speakers.find((speaker) => speaker.name === oldest.name).aff, current.aff,
-    'chained corrections should land on the affiliation the roster ships today')
+  const shipped = JSON.parse(JSON.stringify(defaultsCtx.result))
+  for (const rule of rules) {
+    const continuesEarlierRule = rules.some((other) => other !== rule && other.name === rule.name && other.field === rule.field && other.to === rule.from)
+    if (continuesEarlierRule) continue
+    const current = shipped.find((speaker) => speaker.name === rule.name)
+    const chained = migrate(saved(rule, rule.from, rule.version - 1))
+    assert.equal(chained.speakers.find((speaker) => speaker.name === rule.name)[rule.field], current[rule.field],
+      `${rule.name}: corrections starting from "${rule.from}" should land on the ${rule.field} the roster ships today`)
+  }
+
+  // Jaehwan Kim은 Discussant에서 Keynote로 올라갔습니다. 저장본에 남은 옛 역할도 따라 올라갑니다.
+  const promotion = rules.find((rule) => rule.name === 'Jaehwan Kim' && rule.field === 'role')
+  assert.ok(promotion, 'Jaehwan Kim should carry a role correction')
+  assert.deepEqual([promotion.from, promotion.to], ['Discussant', 'Keynote'])
+  assert.equal(migrate(saved(promotion, 'Discussant', promotion.version - 1)).speakers[0].role, 'Keynote')
 })
 
 test('migrates the oldest Mijeong Kim roster entry to Hanjong Jun', () => {

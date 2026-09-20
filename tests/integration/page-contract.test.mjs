@@ -31,7 +31,7 @@ const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 const baoLiangPortrait = await readFile(new URL('../../assets/human/bao-liang-lu.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = '82a6edfcf0f198400993799a44ff98fe089041ce1a6aa83e4ca90913145a5f10'
+const EXPECTED_CONTENT_HASH = 'bd6af7f8a2ff90ac54ff1d50637b4404904ec347b0ac0d8be7173ee7d971d56c'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -235,10 +235,12 @@ test('preserves all 99 editable content bindings', () => {
   assert.ok(!keys.includes('film.h') && !keys.includes('film.dlgtitle'))
 })
 
+// 재생목록에서 고정 영상들의 순서. 맨 앞자리는 편집 가능한 트레일러가 차지하므로 여기에는 없습니다.
 const FILM_SOURCES = [
-  'assets/films/01-monster-space-eeg.mp4', 'assets/films/02-kbs-news-optimal-space.mp4',
-  'assets/films/03-smart-shelter.mp4', 'assets/films/04-kbs-space-and-brain.mp4',
-  'assets/films/05-jeju-cityscape.mp4', 'assets/films/06-sbs-eeg-emotion.mp4', 'assets/films/07-eeg-iot.mp4'
+  'assets/films/02-kbs-news-optimal-space.mp4', 'assets/films/03-smart-shelter.mp4',
+  'assets/films/04-kbs-space-and-brain.mp4', 'assets/films/05-jeju-cityscape.mp4',
+  'assets/films/06-sbs-eeg-emotion.mp4', 'assets/films/07-eeg-iot.mp4',
+  'assets/films/01-monster-space-eeg.mp4'
 ]
 const filmsSource = () => appScript.match(/var RESEARCH_FILMS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
 const featuredSource = () => appScript.match(/var FEATURED_FILM = \{[^\n]*\};/)?.[0] ?? ''
@@ -273,6 +275,7 @@ test('presents Research Films as one light player beside a numbered playlist', a
   assert.match(section, /id="filmNowTitle" aria-live="polite"/)
   assert.match(section, /<b>Up next<\/b><span id="filmUpNext">/, 'viewers should see what plays next')
   assert.match(section, /<ol class="film-list" id="filmList"/)
+  assert.match(section, /data-filmedit="1"[^>]*>Change the first film</, 'the editable film now sits first, and the button should say so')
   assert.match(appScript, /class="film-item"/)
   assert.match(appScript, /aria-current/)
 
@@ -285,9 +288,10 @@ test('presents Research Films as one light player beside a numbered playlist', a
   const context = {}
   new Script(`${filmsSource()};result=RESEARCH_FILMS;`).runInNewContext(context)
   const films = JSON.parse(JSON.stringify(context.result))
-  assert.deepEqual(films.map((film) => film.src), FILM_SOURCES, 'films should follow the numbered order of the source folder')
-  films.forEach((film, index) => {
-    assert.equal(film.poster, `assets/films/posters/0${index + 1}.webp`)
+  assert.deepEqual(films.map((film) => film.src), FILM_SOURCES, 'the documentary that used to open the page now closes the playlist')
+  films.forEach((film) => {
+    const number = film.src.match(/films\/(\d\d)-/)?.[1]
+    assert.equal(film.poster, `assets/films/posters/${number}.webp`, `${film.src}: poster keeps the film's own number, not its place in the list`)
     assert.ok(film.title.length > 3 && film.meta.length > 2, `${film.src}: needs a title and a source label`)
     assert.match(film.time, /^\d{1,2}:\d{2}$/, `${film.src}: running time`)
   })
@@ -298,7 +302,7 @@ test('presents Research Films as one light player beside a numbered playlist', a
   await access(new URL('../../assets/films/posters/08.webp', import.meta.url))
 })
 
-test('keeps the previously featured film last and plays the list in order', () => {
+test('opens with the editable featured film and plays the list in order', () => {
   const run = (expression) => {
     const context = {}
     new Script(`
@@ -313,22 +317,22 @@ test('keeps the previously featured film last and plays the list in order', () =
 
   const standard = run("buildPlaylist(RESEARCH_FILMS, 'assets/emotive-film-trailer.mp4')")
   assert.equal(standard.length, 8)
-  assert.deepEqual(standard.slice(0, 7).map((film) => film.src), FILM_SOURCES)
-  assert.deepEqual(standard[7], {
+  assert.deepEqual(standard[0], {
     src: 'assets/emotive-film-trailer.mp4', poster: 'assets/films/posters/08.webp',
     title: 'Monster Space — Trailer', meta: 'Trailer', time: '1:34'
   })
+  assert.deepEqual(standard.slice(1).map((film) => film.src), FILM_SOURCES)
 
-  // 편집 모드에서 영상을 갈아 끼워도 그 영상은 언제나 맨 끝 자리입니다
+  // 편집 모드에서 영상을 갈아 끼워도 그 영상은 언제나 맨 앞자리입니다
   const swapped = run("buildPlaylist(RESEARCH_FILMS, 'blob:my-own-cut')")
-  assert.deepEqual(swapped.slice(0, 7).map((film) => film.src), FILM_SOURCES)
-  assert.equal(swapped[7].src, 'blob:my-own-cut')
-  assert.equal(swapped[7].poster, '', 'a swapped-in film has no matching poster')
-  assert.equal(swapped[7].time, '')
+  assert.equal(swapped[0].src, 'blob:my-own-cut')
+  assert.equal(swapped[0].poster, '', 'a swapped-in film has no matching poster')
+  assert.equal(swapped[0].time, '')
+  assert.deepEqual(swapped.slice(1).map((film) => film.src), FILM_SOURCES)
 
-  // 목록이 더 길어져도 맨 끝을 지키고, 원본 배열은 건드리지 않습니다
-  const grown = run("(function(){var before=RESEARCH_FILMS.length;var list=buildPlaylist(RESEARCH_FILMS.concat([{src:'x.mp4',poster:'',title:'Extra',meta:'Test',time:'0:10'}]),'assets/emotive-film-trailer.mp4');return [before===RESEARCH_FILMS.length,list.length,list[list.length-1].src];})()")
-  assert.deepEqual(grown, [true, 9, 'assets/emotive-film-trailer.mp4'])
+  // 목록이 더 길어져도 맨 앞을 지키고, 원본 배열은 건드리지 않습니다
+  const grown = run("(function(){var before=RESEARCH_FILMS.length;var list=buildPlaylist(RESEARCH_FILMS.concat([{src:'x.mp4',poster:'',title:'Extra',meta:'Test',time:'0:10'}]),'assets/emotive-film-trailer.mp4');return [before===RESEARCH_FILMS.length,list.length,list[0].src,list[list.length-1].src];})()")
+  assert.deepEqual(grown, [true, 9, 'assets/emotive-film-trailer.mp4', 'x.mp4'])
 
   // 한 편이 끝나면 다음 편, 마지막 편이 끝나면 멈춥니다(-1)
   assert.deepEqual(run('[nextFilmIndex(0,8),nextFilmIndex(6,8),nextFilmIndex(7,8),nextFilmIndex(0,1)]'), [1, 7, -1, -1])
@@ -379,7 +383,7 @@ test('drives the player state correctly: lazy posters, no stale poster, no prelo
   const player = elements['#filmPlayer']
 
   context.api.renderFilms()
-  assert.equal(player.attrs.src, 'assets/films/01-monster-space-eeg.mp4', 'a baked-in src should be corrected to take 01')
+  assert.equal(player.attrs.src, 'assets/emotive-film-trailer.mp4', 'a baked-in src should be corrected to take 01')
   assert.equal(player.attrs.poster, undefined, 'a baked-in poster must not be fetched before the section is near')
   assert.equal(elements['#filmNowNo'].textContent, 'Take 01 / 08')
   assert.equal(elements['#filmUpNext'].textContent, 'Take 02 — The optimal space, found by brainwaves')
@@ -391,18 +395,19 @@ test('drives the player state correctly: lazy posters, no stale poster, no prelo
   assert.match(elements['#filmList'].innerHTML, /<span class="sr-only film-item-verb">Play <\/span>/)
 
   context.api.showFilmPosters()
-  assert.equal(player.attrs.poster, 'assets/films/posters/01.webp')
+  assert.equal(player.attrs.poster, 'assets/films/posters/08.webp')
 
   context.api.selectFilm(7, true)
-  assert.equal(player.attrs.src, 'assets/emotive-film-trailer.mp4')
-  assert.equal(player.attrs.poster, 'assets/films/posters/08.webp')
+  assert.equal(player.attrs.src, 'assets/films/01-monster-space-eeg.mp4')
+  assert.equal(player.attrs.poster, 'assets/films/posters/01.webp')
   assert.equal(player.playCalls, 1)
   assert.equal(elements['#filmNext'].disabled, true)
   assert.equal(elements['#filmUpNext'].textContent, 'End of the playlist')
 
-  // 편집 모드에서 마지막 영상을 바꾸면: 포스터가 없으므로 앞 영상의 포스터가 남아 있으면 안 됩니다
+  // 편집 모드에서 첫 영상을 바꾸면: 포스터가 없으므로 앞서 보던 포스터가 남아 있으면 안 됩니다
   context.api.setFeatured('blob:my-own-cut')
   context.api.renderFilms()
+  context.api.selectFilm(0, false)
   assert.equal(player.attrs.src, 'blob:my-own-cut')
   assert.equal(player.attrs.poster, undefined, 'the previous poster must not linger on a film that has none')
 })

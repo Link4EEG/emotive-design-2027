@@ -48,6 +48,16 @@ test('serves the complete academic page and featured film over HTTP', async (con
   const firstChunk = await reader?.read()
   assert.equal(Buffer.from(firstChunk?.value ?? []).subarray(4, 8).toString(), 'ftyp')
   await reader?.cancel()
+  // Research Films: 재생목록의 모든 영상이 mp4로 제공됩니다
+  for (const film of ['01-monster-space-eeg', '02-kbs-news-optimal-space', '03-smart-shelter', '04-kbs-space-and-brain', '05-jeju-cityscape', '06-sbs-eeg-emotion', '07-eeg-iot']) {
+    const response = await fetch(`${server.origin}/assets/films/${film}.mp4`)
+    assert.equal(response.status, 200, film)
+    assert.equal(response.headers.get('content-type'), 'video/mp4', film)
+    const filmReader = response.body?.getReader()
+    const chunk = await filmReader?.read()
+    assert.equal(Buffer.from(chunk?.value ?? []).subarray(4, 8).toString(), 'ftyp', film)
+    await filmReader?.cancel()
+  }
 })
 
 test('does not expose files outside the static site root', async (context) => {

@@ -40,5 +40,8 @@ assets/human/Mi Jeong Kim.webp
 assets/human/Bao-Liang Lu.jpg
 assets/human/Shanghai_Jiao_Tong.svg
 
+# Research Films 원본 영상 — 사이트에는 assets/films/의 웹용 사본(메타데이터 제거, faststart)만 올립니다
+assets/video_Research_Films/
+
 # 제공된 UI 참조 자료는 로컬 검토용이며 런타임에는 포함하지 않음
 ref_systemstyle/

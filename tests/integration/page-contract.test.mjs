@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import { Script } from 'node:vm'
 import test from 'node:test'
 
@@ -31,7 +31,7 @@ const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 const baoLiangPortrait = await readFile(new URL('../../assets/human/bao-liang-lu.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = '20ff1ce82e4dbc644cc0d6652fd235c57bb13b345608b4a05806849d5e3433b9'
+const EXPECTED_CONTENT_HASH = '82a6edfcf0f198400993799a44ff98fe089041ce1a6aa83e4ca90913145a5f10'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -118,7 +118,9 @@ test('migrates every past generation of saved event labels without touching othe
   const INVITED_KEYNOTE_COPY = {
     'prog.lead': 'The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.',
     'ppl.lead': "The book's two co-authors and invited speakers deliver the keynotes; the authors lead the thematic sessions, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.",
-    'val.1.p': "The book's two co-authors deliver keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand."
+    'val.1.p': "The book's two co-authors deliver keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand.",
+    'film.title': 'From the research, to the screen.',
+    'film.p': 'Documentaries and broadcast features from the Emotive Design research programme. Pick any take from the list, or press play once and they run in order.'
   }
 
   const GENERATIONS = [
@@ -163,7 +165,9 @@ test('migrates every past generation of saved event labels without touching othe
         'about.title': 'Four days, a decade of research on how space is felt.',
         'prog.lead': 'The whole group meets on 25 March. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.',
         'ppl.lead': "The keynotes and thematic sessions are led by the book's two co-authors, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.",
-        'val.1.p': "The book's two co-authors deliver the keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand."
+        'val.1.p': "The book's two co-authors deliver the keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand.",
+        'film.title': 'Monster Space',
+        'film.p': 'A documentary film from the Emotive Design research programme — the spaces, experiments, and stories behind reading emotion in the built environment. Swap in any cut of your own footage anytime with Edit mode.'
       }
     }
   ]
@@ -220,12 +224,187 @@ test('preserves the complete section order and anchor structure', () => {
   assert.deepEqual(positions, [...positions].sort((a, b) => a - b))
 })
 
-test('preserves all 101 editable content bindings', () => {
+test('preserves all 99 editable content bindings', () => {
+  // Research Films 재생목록이 들어오면서 단일 영상용이던 film.h와 팝업 제목 film.dlgtitle 두 개가 빠졌습니다
   const keys = extractDataEditKeys(html)
-  assert.equal(keys.length, 101)
-  assert.equal(new Set(keys).size, 101)
+  assert.equal(keys.length, 99)
+  assert.equal(new Set(keys).size, 99)
   assert.deepEqual(keys.slice(0, 3), ['hero.line1', 'hero.line2', 'hero.i1'])
-  assert.deepEqual(keys.slice(-3), ['foot.mid', 'foot.contact', 'film.dlgtitle'])
+  assert.deepEqual(keys.slice(-2), ['foot.mid', 'foot.contact'])
+  assert.ok(keys.includes('film.title') && keys.includes('film.p'))
+  assert.ok(!keys.includes('film.h') && !keys.includes('film.dlgtitle'))
+})
+
+const FILM_SOURCES = [
+  'assets/films/01-monster-space-eeg.mp4', 'assets/films/02-kbs-news-optimal-space.mp4',
+  'assets/films/03-smart-shelter.mp4', 'assets/films/04-kbs-space-and-brain.mp4',
+  'assets/films/05-jeju-cityscape.mp4', 'assets/films/06-sbs-eeg-emotion.mp4', 'assets/films/07-eeg-iot.mp4'
+]
+const filmsSource = () => appScript.match(/var RESEARCH_FILMS = \[[\s\S]*?\n  \];/)?.[0] ?? ''
+const featuredSource = () => appScript.match(/var FEATURED_FILM = \{[^\n]*\};/)?.[0] ?? ''
+const playlistSource = () => [
+  appScript.match(/function buildPlaylist\(films, featuredSrc\)\{[\s\S]*?\n  \}/)?.[0] ?? '',
+  appScript.match(/function nextFilmIndex\(index, total\)\{[\s\S]*?\n  \}/)?.[0] ?? ''
+].join('\n')
+
+test('presents Research Films as one light player beside a numbered playlist', async () => {
+  const section = html.match(/<section id="film"[\s\S]*?<\/section>/)?.[0] ?? ''
+  assert.match(section, /<div class="kicker">Research Films<\/div>/)
+  assert.match(section, /data-edit="film\.title"/)
+  assert.match(section, /class="lead" data-edit="film\.p"/)
+
+  // 부하: 영상 요소는 하나뿐이고, 재생을 누르기 전에는 영상 데이터를 한 바이트도 받지 않습니다
+  assert.equal((section.match(/<video\b/g) ?? []).length, 1)
+  assert.match(section, /<video id="filmPlayer"[^>]*controls[^>]*playsinline[^>]*preload="none"/)
+  assert.doesNotMatch(section, /<video[^>]*autoplay/)
+  assert.doesNotMatch(html, /id="filmDlg"|filmDlgVideo/, 'the second, hidden copy of the film should be gone')
+  // 크롬은 load()를 직접 부르면 preload="none"을 무시하고 몇 MB를 미리 받습니다.
+  // 그래서 영상을 고를 때는 src 속성만 바꾸고 load()는 부르지 않습니다.
+  const selectSource = appScript.match(/function selectFilm\(i, autoplay\)\{[\s\S]*?\n  \}/)?.[0] ?? ''
+  assert.match(selectSource, /setAttribute\("src"/)
+  assert.doesNotMatch(selectSource, /setVideoSrc|\.load\(/)
+  // 재생목록 그림(포스터)도 구역이 화면 가까이 올 때까지 받지 않습니다
+  assert.match(appScript, /IntersectionObserver/)
+
+  // 누구나 조작할 수 있게: 큰 재생 버튼, 이전/다음, 지금 재생 중 안내(화면낭독기에도 전달)
+  assert.match(section, /<button type="button" class="film-bigplay" id="filmBigPlay" aria-label="Play film"/)
+  assert.match(section, /<button type="button" id="filmPrev"[^>]*>/)
+  assert.match(section, /<button type="button" id="filmNext"[^>]*>/)
+  assert.match(section, /id="filmNowTitle" aria-live="polite"/)
+  assert.match(section, /<b>Up next<\/b><span id="filmUpNext">/, 'viewers should see what plays next')
+  assert.match(section, /<ol class="film-list" id="filmList"/)
+  assert.match(appScript, /class="film-item"/)
+  assert.match(appScript, /aria-current/)
+
+  // 뉴스 자막이 잘리지 않도록 16:9 그대로(contain) 보여 줍니다
+  const videoRule = systemCss.match(/\.film-stage video\s*\{[^}]*\}/)?.[0] ?? ''
+  assert.match(videoRule, /aspect-ratio:16\/9/)
+  assert.match(videoRule, /object-fit:contain/)
+  assert.match(systemCss, /\.film-item\[aria-current="true"\]/)
+
+  const context = {}
+  new Script(`${filmsSource()};result=RESEARCH_FILMS;`).runInNewContext(context)
+  const films = JSON.parse(JSON.stringify(context.result))
+  assert.deepEqual(films.map((film) => film.src), FILM_SOURCES, 'films should follow the numbered order of the source folder')
+  films.forEach((film, index) => {
+    assert.equal(film.poster, `assets/films/posters/0${index + 1}.webp`)
+    assert.ok(film.title.length > 3 && film.meta.length > 2, `${film.src}: needs a title and a source label`)
+    assert.match(film.time, /^\d{1,2}:\d{2}$/, `${film.src}: running time`)
+  })
+  for (const film of films) {
+    await access(new URL(`../../${film.src}`, import.meta.url))
+    await access(new URL(`../../${film.poster}`, import.meta.url))
+  }
+  await access(new URL('../../assets/films/posters/08.webp', import.meta.url))
+})
+
+test('keeps the previously featured film last and plays the list in order', () => {
+  const run = (expression) => {
+    const context = {}
+    new Script(`
+      var DEFAULT_VIDEOS={film1:'assets/emotive-film-trailer.mp4'};
+      ${filmsSource()}
+      ${featuredSource()}
+      ${playlistSource()}
+      result=${expression};
+    `).runInNewContext(context)
+    return JSON.parse(JSON.stringify(context.result))
+  }
+
+  const standard = run("buildPlaylist(RESEARCH_FILMS, 'assets/emotive-film-trailer.mp4')")
+  assert.equal(standard.length, 8)
+  assert.deepEqual(standard.slice(0, 7).map((film) => film.src), FILM_SOURCES)
+  assert.deepEqual(standard[7], {
+    src: 'assets/emotive-film-trailer.mp4', poster: 'assets/films/posters/08.webp',
+    title: 'Monster Space — Trailer', meta: 'Trailer', time: '1:34'
+  })
+
+  // 편집 모드에서 영상을 갈아 끼워도 그 영상은 언제나 맨 끝 자리입니다
+  const swapped = run("buildPlaylist(RESEARCH_FILMS, 'blob:my-own-cut')")
+  assert.deepEqual(swapped.slice(0, 7).map((film) => film.src), FILM_SOURCES)
+  assert.equal(swapped[7].src, 'blob:my-own-cut')
+  assert.equal(swapped[7].poster, '', 'a swapped-in film has no matching poster')
+  assert.equal(swapped[7].time, '')
+
+  // 목록이 더 길어져도 맨 끝을 지키고, 원본 배열은 건드리지 않습니다
+  const grown = run("(function(){var before=RESEARCH_FILMS.length;var list=buildPlaylist(RESEARCH_FILMS.concat([{src:'x.mp4',poster:'',title:'Extra',meta:'Test',time:'0:10'}]),'assets/emotive-film-trailer.mp4');return [before===RESEARCH_FILMS.length,list.length,list[list.length-1].src];})()")
+  assert.deepEqual(grown, [true, 9, 'assets/emotive-film-trailer.mp4'])
+
+  // 한 편이 끝나면 다음 편, 마지막 편이 끝나면 멈춥니다(-1)
+  assert.deepEqual(run('[nextFilmIndex(0,8),nextFilmIndex(6,8),nextFilmIndex(7,8),nextFilmIndex(0,1)]'), [1, 7, -1, -1])
+  assert.match(appScript, /addEventListener\("ended"/)
+  // 영상을 못 불러오면 '재생 중' 표시에 갇히지 않고 안내를 보여 줍니다
+  assert.match(appScript, /addEventListener\("error"/)
+  // Export HTML로 구울 때 플레이어의 src/poster를 지워, 구운 파일이 첫 화면에서 아무것도 미리 받지 않게 합니다
+  const exportSource = appScript.match(/var doc = document\.documentElement\.cloneNode\(true\);[\s\S]*?outerHTML/)?.[0] ?? ''
+  assert.match(exportSource, /#filmPlayer/)
+  assert.match(exportSource, /removeAttribute\("poster"\)/)
+  assert.match(exportSource, /removeAttribute\("src"\)/)
+})
+
+test('drives the player state correctly: lazy posters, no stale poster, no preloading, up-next text', () => {
+  // 브라우저 없이 플레이어 로직을 실제로 돌려 봅니다. 화면 요소는 속성만 기억하는 가짜 객체로 대신합니다.
+  const runtime = appScript.match(/var filmPlaylist=\[\][\s\S]*?\n  function renderFilms\(\)\{[\s\S]*?\n  \}/)?.[0] ?? ''
+  assert.ok(runtime.length > 0, 'player runtime block not found')
+  const fakeElement = (initial = {}) => {
+    const attrs = Object.assign({}, initial)
+    return {
+      attrs, textContent: '', innerHTML: '', disabled: false, paused: true, ended: false, error: null,
+      classList: { toggle() {}, add() {}, remove() {} },
+      getAttribute: (name) => (name in attrs ? attrs[name] : null),
+      setAttribute: (name, value) => { attrs[name] = String(value) },
+      removeAttribute: (name) => { delete attrs[name] },
+      load() { throw new Error('load() must never be called: Chrome would ignore preload="none"') },
+      play() { this.playCalls = (this.playCalls ?? 0) + 1; return { catch() {} } }
+    }
+  }
+  // Export HTML로 구운 파일처럼, 다른 영상의 poster/src가 미리 박혀 있는 상태에서 시작합니다
+  const elements = {
+    '#filmPlayer': fakeElement({ poster: 'assets/films/posters/05.webp', src: 'assets/films/05-jeju-cityscape.mp4' }),
+    '#filmCard': fakeElement(), '#filmList': fakeElement(), '#filmNowNo': fakeElement(), '#filmNowTitle': fakeElement(),
+    '#filmPrev': fakeElement(), '#filmNext': fakeElement(), '#filmUpNext': fakeElement()
+  }
+  const context = { elements, state: { videos: { film1: 'assets/emotive-film-trailer.mp4' } } }
+  new Script(`
+    var DEFAULT_VIDEOS={film1:'assets/emotive-film-trailer.mp4'};
+    function $(q){ return elements[q]; }
+    function $$(){ return []; }
+    function esc(t){ return String(t); }
+    ${filmsSource()}
+    ${featuredSource()}
+    ${playlistSource()}
+    ${runtime}
+    api={ renderFilms:renderFilms, selectFilm:selectFilm, showFilmPosters:showFilmPosters, setFeatured:function(src){ state.videos.film1=src; } };
+  `).runInNewContext(context)
+  const player = elements['#filmPlayer']
+
+  context.api.renderFilms()
+  assert.equal(player.attrs.src, 'assets/films/01-monster-space-eeg.mp4', 'a baked-in src should be corrected to take 01')
+  assert.equal(player.attrs.poster, undefined, 'a baked-in poster must not be fetched before the section is near')
+  assert.equal(elements['#filmNowNo'].textContent, 'Take 01 / 08')
+  assert.equal(elements['#filmUpNext'].textContent, 'Take 02 — The optimal space, found by brainwaves')
+  assert.equal(elements['#filmPrev'].disabled, true)
+  assert.equal(elements['#filmNext'].disabled, false)
+  assert.equal((elements['#filmList'].innerHTML.match(/class="film-item"/g) ?? []).length, 8)
+  // 화면에 보이는 글자(Take·출처·시간·제목)가 그대로 버튼의 이름이 됩니다 — aria-label로 덮어쓰지 않습니다
+  assert.doesNotMatch(elements['#filmList'].innerHTML, /aria-label/)
+  assert.match(elements['#filmList'].innerHTML, /<span class="sr-only film-item-verb">Play <\/span>/)
+
+  context.api.showFilmPosters()
+  assert.equal(player.attrs.poster, 'assets/films/posters/01.webp')
+
+  context.api.selectFilm(7, true)
+  assert.equal(player.attrs.src, 'assets/emotive-film-trailer.mp4')
+  assert.equal(player.attrs.poster, 'assets/films/posters/08.webp')
+  assert.equal(player.playCalls, 1)
+  assert.equal(elements['#filmNext'].disabled, true)
+  assert.equal(elements['#filmUpNext'].textContent, 'End of the playlist')
+
+  // 편집 모드에서 마지막 영상을 바꾸면: 포스터가 없으므로 앞 영상의 포스터가 남아 있으면 안 됩니다
+  context.api.setFeatured('blob:my-own-cut')
+  context.api.renderFilms()
+  assert.equal(player.attrs.src, 'blob:my-own-cut')
+  assert.equal(player.attrs.poster, undefined, 'the previous poster must not linger on a film that has none')
 })
 
 test('preserves runtime content, media, registration, and editor storage contracts', () => {
@@ -812,7 +991,7 @@ test('keeps navigation and dialogs keyboard-accessible', () => {
   assert.match(html, /<button class="nav-film"[^>]*data-openfilm/)
   assert.match(systemCss, /:focus-visible/)
   assert.match(html, /<div class="count" id="countdown"[^>]*role="timer"[^>]*aria-live="off"/)
-  assert.equal((html.match(/class="dlg-close"[^>]*aria-label="Close"/g) ?? []).length, 4)
+  assert.equal((html.match(/class="dlg-close"[^>]*aria-label="Close"/g) ?? []).length, 3)
 })
 
 test('retains mobile access to primary navigation links', () => {

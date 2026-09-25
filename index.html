@@ -497,7 +497,7 @@
     .kicker{position:static;grid-row:auto;margin:0 0 24px}
     .display{grid-row:auto;margin-bottom:24px;font-size:clamp(40px,13vw,60px)}
     .lead{grid-row:auto;margin-bottom:48px;font-size:17px}
-    .film-card{grid-row:auto}
+    .film-card,.value-grid,.stream-grid,#program>div:last-child,.join-grid{grid-row:auto}
     .film-now,.film-next{padding:16px}
     .film-bigplay{width:68px;height:68px;margin:-34px 0 0 -34px}
     .nav-in{grid-template-columns:var(--grid)}
@@ -646,9 +646,9 @@
 <!-- ============ STREAMS ============ -->
 <div class="band">
 <section id="streams" class="wrap reveal">
-  <div class="kicker">Four Streams</div>
+  <div class="kicker">Three Streams + Roundtable</div>
   <h2 class="display" data-edit="streams.title">One process: read, test, extend, return.</h2>
-  <p class="lead" data-edit="streams.lead">The program follows the book's four-part structure — Brain, Space, Machine Intelligence, and Human. Each stream is a session; together they run as a single arc from signal to ethics.</p>
+  <p class="lead" data-edit="streams.lead">The program follows the book's three-part structure — Brain, Space, and Machine Intelligence. Each part is a session; a closing roundtable then returns the conversation to people, so the day runs as a single arc from signal to ethics.</p>
   <div class="stream-grid">
     <div class="stream" data-s="brain">
       <span class="num">STREAM I</span>
@@ -672,7 +672,7 @@
       <span class="num">ROUNDTABLE</span>
       <h3 data-edit="st.human.h">Human</h3>
       <p data-edit="st.human.p">Ethics, neurorights, inclusion, and privacy — the future roadmap of affective, human-centred design.</p>
-      <div class="part" data-edit="st.human.part">Book · Part IV</div>
+      <div class="part" data-edit="st.human.part">Closing session · Beyond the book</div>
     </div>
   </div>
 </section>
@@ -697,7 +697,7 @@
 <section id="program" class="wrap reveal">
   <div class="kicker">Talks</div>
   <h2 class="display" data-edit="prog.title">Join the conversation.</h2>
-  <p class="lead" data-edit="prog.lead">The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.</p>
+  <p class="lead" data-edit="prog.lead">The whole group meets on 25 March. The two authors of the new book and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.</p>
   <div style="margin-top:40px">
     <div class="talk">
       <div class="time" data-edit="p1.time">09:00</div>
@@ -778,12 +778,12 @@
   <div class="book-txt">
     <div class="kicker">The Book</div>
     <h2 data-edit="book.h">The Roundabout is the launch of the book.</h2>
-    <p data-edit="book.p1">Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's four-part structure onto the stage.</p>
+    <p data-edit="book.p1">Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's three parts onto the stage and closes with a roundtable.</p>
     <div class="book-parts">
       <span data-edit="book.pt1"><b>I · Brain</b> — Reading emotion</span>
       <span data-edit="book.pt2"><b>II · Space</b> — Testing in place</span>
       <span data-edit="book.pt3"><b>III · Machine</b> — Extending with AI</span>
-      <span data-edit="book.pt4"><b>IV · Human</b> — Ethics &amp; future</span>
+      <span data-edit="book.pt4"><b>+ Roundtable</b> — Ethics &amp; future</span>
     </div>
     <a class="btn btn-grad" href="#register">Reserve your seat</a>
   </div>
@@ -1014,7 +1014,11 @@
         "fin.c3":["Sydney / Seoul"],
         "fin.c1":["OCT 2027","22–25 MAR 2027"],
         "about.title":["A single day, a decade of research on how space is felt."],
-        "prog.lead":["A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.","A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.","The whole group meets on 25 March. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative."],
+        "prog.lead":["A full-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.","A four-day proposal. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.","The whole group meets on 25 March. The two book authors deliver the keynotes and three thematic sessions; the closing roundtable pairs the authors as chairs with invited discussants. Times are indicative.","The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative."],
+        "streams.lead":["The program follows the book's four-part structure — Brain, Space, Machine Intelligence, and Human. Each stream is a session; together they run as a single arc from signal to ethics."],
+        "st.human.part":["Book · Part IV"],
+        "book.p1":["Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's four-part structure onto the stage."],
+        "book.pt4":["<b>IV · Human</b> — Ethics &amp; future"],
         "ppl.lead":["The keynotes and thematic sessions are led by the book's two co-authors, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements."],
         "val.1.p":["The book's two co-authors deliver the keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand."],
         "film.title":["Monster Space"],
@@ -1029,7 +1033,11 @@
         "fin.c3":"Hanyang University, Seoul",
         "fin.c1":"23–26 MAR 2027",
         "about.title":"Four days, a decade of research on how space is felt.",
-        "prog.lead":"The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.",
+        "prog.lead":"The whole group meets on 25 March. The two authors of the new book and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.",
+        "streams.lead":"The program follows the book's three-part structure — Brain, Space, and Machine Intelligence. Each part is a session; a closing roundtable then returns the conversation to people, so the day runs as a single arc from signal to ethics.",
+        "st.human.part":"Closing session · Beyond the book",
+        "book.p1":"Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's three parts onto the stage and closes with a roundtable.",
+        "book.pt4":"<b>+ Roundtable</b> — Ethics &amp; future",
         "ppl.lead":"The book's two co-authors and invited speakers deliver the keynotes; the authors lead the thematic sessions, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.",
         "val.1.p":"The book's two co-authors deliver keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand.",
         "film.title":"From the research, to the screen.",

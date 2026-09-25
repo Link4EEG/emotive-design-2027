@@ -31,7 +31,7 @@ const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 const baoLiangPortrait = await readFile(new URL('../../assets/human/bao-liang-lu.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = 'bd6af7f8a2ff90ac54ff1d50637b4404904ec347b0ac0d8be7173ee7d971d56c'
+const EXPECTED_CONTENT_HASH = 'cd9272118e1457ef7466fffacd5c4d26f3919eae5174b40941337ae3db673547'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -91,11 +91,31 @@ test('names Hanyang University Seoul Campus as the venue and drops Sydney as a l
   assert.match(appScript, /Visiting Senior Fellow, UNSW Sydney/)
 })
 
+test('presents the book as three parts plus a closing roundtable, as the editor confirmed', () => {
+  // 책은 Brain · Space · Machine Intelligence 세 부로만 구성됩니다. 'Human'은 책의 부가 아니라 마무리 라운드테이블입니다.
+  assert.doesNotMatch(staticMarkup, /four-part|four streams|Part IV|IV · Human/i)
+  assert.match(staticMarkup, /<div class="kicker">Three Streams \+ Roundtable<\/div>/)
+  assert.match(staticMarkup, /data-edit="streams\.lead">The program follows the book's three-part structure — Brain, Space, and Machine Intelligence\./)
+  assert.deepEqual(staticMarkup.match(/Book · Part [IVX]+/g), ['Book · Part I', 'Book · Part II', 'Book · Part III'])
+  assert.match(staticMarkup, /<span class="num">ROUNDTABLE<\/span>\s*<h3 data-edit="st\.human\.h">Human<\/h3>/)
+  assert.match(staticMarkup, /data-edit="st\.human\.part">Closing session · Beyond the book</)
+  assert.match(staticMarkup, /data-edit="book\.p1">[^<]*the book's three parts onto the stage and closes with a roundtable\./)
+  assert.match(staticMarkup, /data-edit="book\.pt4"><b>\+ Roundtable<\/b> — Ethics &amp; future</)
+  // 편집자 표현: "The two book authors" → "The two authors of the new book"
+  assert.doesNotMatch(staticMarkup, /The two book authors/)
+  assert.match(staticMarkup, /data-edit="prog\.lead">The whole group meets on 25 March\. The two authors of the new book and invited speakers deliver the keynotes;/)
+
+  // 폰 폭에서는 제목·안내문·카드가 쓰인 순서대로 쌓여야 합니다. 카드 격자를 3번째 줄에 고정해 두면 안내문이 카드 아래로 밀립니다.
+  const phone = systemCss.match(/@media \(max-width:640px\)\{[\s\S]*?\n  \}/)?.[0] ?? ''
+  assert.match(phone, /\.stream-grid[^{]*\{grid-row:auto\}/)
+  assert.match(phone, /\.value-grid[^{]*\{grid-row:auto\}/)
+})
+
 test('credits the invited keynote speakers alongside the book authors', () => {
   // 연사 카드에 초청 기조연설자가 있으므로, 안내 문구가 "두 저자만 기조연설" 이라고 말하면 안 됩니다
   assert.doesNotMatch(staticMarkup, /deliver the keynotes and (?:all )?three thematic sessions/)
   assert.doesNotMatch(staticMarkup, /The keynotes and thematic sessions are led by the book's two co-authors/)
-  assert.match(staticMarkup, /data-edit="prog\.lead">The whole group meets on 25 March\. The two book authors and invited speakers deliver the keynotes;/)
+  assert.match(staticMarkup, /data-edit="prog\.lead">The whole group meets on 25 March\. The two authors of the new book and invited speakers deliver the keynotes;/)
   assert.match(staticMarkup, /data-edit="ppl\.lead">The book's two co-authors and invited speakers deliver the keynotes;/)
   assert.match(staticMarkup, /data-edit="val\.1\.p">The book's two co-authors deliver keynotes and all three thematic sessions/)
 
@@ -116,7 +136,11 @@ test('migrates every past generation of saved event labels without touching othe
 
   // 초청 기조연설자가 생긴 뒤의 문구: 두 저자만 기조연설을 한다고 말하지 않습니다
   const INVITED_KEYNOTE_COPY = {
-    'prog.lead': 'The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.',
+    'prog.lead': 'The whole group meets on 25 March. The two authors of the new book and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.',
+    'streams.lead': "The program follows the book's three-part structure — Brain, Space, and Machine Intelligence. Each part is a session; a closing roundtable then returns the conversation to people, so the day runs as a single arc from signal to ethics.",
+    'st.human.part': 'Closing session · Beyond the book',
+    'book.p1': "Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's three parts onto the stage and closes with a roundtable.",
+    'book.pt4': '<b>+ Roundtable</b> — Ethics &amp; future',
     'ppl.lead': "The book's two co-authors and invited speakers deliver the keynotes; the authors lead the thematic sessions, joined by invited discussants. Confirmed participants below — add or remove anyone in Edit mode. Stay tuned for more announcements.",
     'val.1.p': "The book's two co-authors deliver keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand.",
     'film.title': 'From the research, to the screen.',
@@ -168,6 +192,24 @@ test('migrates every past generation of saved event labels without touching othe
         'val.1.p': "The book's two co-authors deliver the keynotes and all three thematic sessions — ten-plus years of original experiments, first-hand.",
         'film.title': 'Monster Space',
         'film.p': 'A documentary film from the Emotive Design research programme — the spaces, experiments, and stories behind reading emotion in the built environment. Swap in any cut of your own footage anytime with Edit mode.'
+      }
+    },
+    {
+      label: 'the four-part billing before the editor confirmed three parts',
+      text: {
+        'hero.i1': '23–26 MAR 2027',
+        'count.date': '23–26 March 2027',
+        'fin.c1': '23–26 MAR 2027',
+        'count.place': 'Countdown to 25 March, the one day everyone meets; the other days are individual meetings and small-group discussions. Hanyang University, Seoul Campus — hybrid format planned.',
+        'hero.i3': 'Hanyang University',
+        'hero.i4': 'Seoul Campus',
+        'fin.c3': 'Hanyang University, Seoul',
+        'about.title': 'Four days, a decade of research on how space is felt.',
+        'prog.lead': 'The whole group meets on 25 March. The two book authors and invited speakers deliver the keynotes; the authors lead three thematic sessions, and the closing roundtable pairs them as chairs with invited discussants. Times are indicative.',
+        'streams.lead': "The program follows the book's four-part structure — Brain, Space, Machine Intelligence, and Human. Each stream is a session; together they run as a single arc from signal to ethics.",
+        'st.human.part': 'Book · Part IV',
+        'book.p1': "Emotive Design gathers roughly a decade of original experiments into one argument: that emotion and cognition in space can be read with EEG and machine intelligence, and returned to design. The 2027 Roundabout moves the book's four-part structure onto the stage.",
+        'book.pt4': '<b>IV · Human</b> — Ethics &amp; future'
       }
     }
   ]

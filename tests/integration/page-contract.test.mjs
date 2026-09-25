@@ -31,7 +31,7 @@ const miJeongPortrait = await readFile(new URL('../../assets/human/mi-jeong-kim.
 const shinPortrait = await readFile(new URL('../../assets/human/hyunkyu-shin.webp', import.meta.url))
 const baoLiangPortrait = await readFile(new URL('../../assets/human/bao-liang-lu.webp', import.meta.url))
 
-const EXPECTED_CONTENT_HASH = 'cd9272118e1457ef7466fffacd5c4d26f3919eae5174b40941337ae3db673547'
+const EXPECTED_CONTENT_HASH = '4b5413533c19d38063d6fac69328d257fe5fe6527c6eb94af14e10be92825b4a'
 const SECTION_MARKERS = Object.freeze([
   '<header id="top"',
   '<section id="about"',
@@ -61,9 +61,9 @@ test('presents the event consistently as Roundabout across metadata and editable
 })
 
 test('publishes the March 2027 dates and says which day the whole group meets', () => {
-  assert.equal((staticMarkup.match(/23–26 MAR 2027/g) ?? []).length, 2)
-  assert.match(staticMarkup, /data-edit="count\.date"[^>]*>23–26 March 2027</)
-  assert.match(staticMarkup, /data-edit="about\.title"[^>]*>Four days, a decade of research on how space is felt\.</)
+  assert.equal((staticMarkup.match(/24–26 MAR 2027/g) ?? []).length, 2)
+  assert.match(staticMarkup, /data-edit="count\.date"[^>]*>24–26 March 2027</)
+  assert.match(staticMarkup, /data-edit="about\.title"[^>]*>Three days, a decade of research on how space is felt\.</)
 
   // 넷째 날이 아니라 25일 하루가 전원이 모이는 날임을 날짜 옆과 프로그램 도입부에서 밝힙니다
   assert.match(staticMarkup, /data-edit="prog\.lead"[^>]*>The whole group meets on 25 March\./)
@@ -71,7 +71,7 @@ test('publishes the March 2027 dates and says which day the whole group meets', 
   assert.match(appScript, /Date\.parse\("2027-03-25T09:00:00\+11:00"\)/)
 
   // 지나간 표기가 남아 있지 않아야 합니다
-  assert.doesNotMatch(staticMarkup, /22–25|A single day|A full-day proposal|A four-day proposal/)
+  assert.doesNotMatch(staticMarkup, /22–25|23–26|Four days|A single day|A full-day proposal|A four-day proposal/)
   assert.doesNotMatch(staticMarkup, /OCT 2027|1 October 2027/)
   assert.doesNotMatch(appScript, /new Date\(2027,/)
 })
@@ -240,15 +240,15 @@ test('migrates every past generation of saved event labels without touching othe
     assert.equal(context.result.text.hero, 'An international Roundabout and book launch', where)
     assert.equal(context.result.text.plural, 'Prior Roundabout references', where)
     assert.equal(context.result.text.custom, 'Keep this custom edit', where)
-    assert.equal(context.result.text['hero.i1'], '23–26 MAR 2027', where)
-    assert.equal(context.result.text['count.date'], '23–26 March 2027', where)
-    assert.equal(context.result.text['fin.c1'], '23–26 MAR 2027', where)
+    assert.equal(context.result.text['hero.i1'], '24–26 MAR 2027', where)
+    assert.equal(context.result.text['count.date'], '24–26 March 2027', where)
+    assert.equal(context.result.text['fin.c1'], '24–26 MAR 2027', where)
     assert.match(context.result.text['count.place'], /^Countdown to 25 March, the one day everyone meets;/, where)
     assert.match(context.result.text['count.place'], /Hanyang University, Seoul Campus — hybrid format planned\.$/, where)
     assert.equal(context.result.text['hero.i3'], 'Hanyang University', where)
     assert.equal(context.result.text['hero.i4'], 'Seoul Campus', where)
     assert.equal(context.result.text['fin.c3'], 'Hanyang University, Seoul', where)
-    assert.equal(context.result.text['about.title'], 'Four days, a decade of research on how space is felt.', where)
+    assert.equal(context.result.text['about.title'], 'Three days, a decade of research on how space is felt.', where)
     assert.match(context.result.text['prog.lead'], /^The whole group meets on 25 March\./, where)
     for (const [key, value] of Object.entries(INVITED_KEYNOTE_COPY)) {
       if (key in generation.text) assert.equal(context.result.text[key], value, `${key} ${where}`)
